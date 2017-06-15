@@ -69,7 +69,7 @@ def get_next_review_link(link):
         if 'reviews' in link:
             return link.split('start=')[0] + 'start=' + str(int(link.split('start=')[1]) + 10)
         else:
-            return link.split('?')[0] + '/reviews?start=0'
+            return link.split('?')[0].strip('/') + '/reviews?start=0'
     except Exception:
         traceback.print_exc()
 
