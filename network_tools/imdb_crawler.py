@@ -3,8 +3,7 @@ from time import sleep
 import requests
 from bs4 import BeautifulSoup
 
-headers = {
-    'headers': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'}
+import constant
 
 
 def get_page(url, sleep_time=0, try_times=3):
@@ -20,7 +19,7 @@ def get_page(url, sleep_time=0, try_times=3):
     for i in xrange(0, try_times):
         try:
             url = url.rstrip('\n')
-            r = requests.get(url, headers=headers)
+            r = requests.get(url, headers=constant.headers)
             if r.status_code != 200:
                 sleep(sleep_time)
                 continue
@@ -152,13 +151,4 @@ def parse_review(url, sleep_time=3):
 
 if __name__ == '__main__':
     links = grab_list()
-    movies = [get_next_review_link(l) for l in links.values()]
-    print parse_review(movies[0], 1)
-    print parse_review('http://www.imdb.com/title/tt2316204/reviews?start=10000', 1)
-
-    # movies = [parse_movie(l) for l in links]
-    # # Write in a file
-    # with open('top_movies.txt', 'a+') as f:
-    #     f.write(json.dumps(movies))
-    #
-    # print('Movie Data Stored successfully')
+    print [get_next_review_link(l) for l in links.values()]
