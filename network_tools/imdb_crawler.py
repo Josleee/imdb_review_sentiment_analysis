@@ -3,10 +3,10 @@ from time import sleep
 import requests
 from bs4 import BeautifulSoup
 
-import constant
+import config
 
 
-def get_page(url, sleep_time=0, try_times=3):
+def get_page(url, sleep_time=config.interval_sleep_time, try_times=config.try_times):
     """
     Parse the page for a certain url.
 
@@ -19,7 +19,7 @@ def get_page(url, sleep_time=0, try_times=3):
     for i in xrange(0, try_times):
         try:
             url = url.rstrip('\n')
-            r = requests.get(url, headers=constant.headers)
+            r = requests.get(url, headers=config.headers)
             if r.status_code != 200:
                 sleep(sleep_time)
                 continue
@@ -41,8 +41,7 @@ def grab_list():
 
     dict_links = {}
     base_url = 'http://www.imdb.com'
-    # boxoffice can be changed to 'top'
-    url = base_url + '/chart/' + 'boxoffice'
+    url = base_url + '/chart/' + config.grab_list_category
 
     try:
         soup = get_page(url)
@@ -73,7 +72,7 @@ def get_next_review_link(link):
         print str(ex)
 
 
-def parse_movie(url, sleep_time=3):
+def parse_movie(url, sleep_time=config.interval_sleep_time):
     """
     Parse info of an individual movie page.
 
@@ -113,7 +112,7 @@ def parse_movie(url, sleep_time=3):
         return record
 
 
-def parse_review(url, sleep_time=3):
+def parse_review(url, sleep_time=config.interval_sleep_time):
     """
     Parse reviews from the a certain review page.
 
