@@ -23,6 +23,7 @@ def fetch_reviews(url, fetch_number=0):
         total_page_number = imdb_crawler.get_review_page_size(url)
     else:
         total_page_number = int(math.ceil(fetch_number / 10.0))
+    print 'The total number of pages of reviews is ' + str(total_page_number) + '.'
 
     while True:
         list_partial_reviews = imdb_crawler.parse_review(url)
