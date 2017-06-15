@@ -1,3 +1,5 @@
+import re
+import traceback
 from time import sleep
 
 import requests
@@ -26,8 +28,8 @@ def get_page(url, sleep_time=config.interval_sleep_time, try_times=config.try_ti
             html = r.text
             soup = BeautifulSoup(html, 'lxml')
             return soup
-        except Exception as ex:
-            print str(ex)
+        except Exception:
+            traceback.print_exc()
             sleep(sleep_time)
             continue
 
@@ -49,8 +51,8 @@ def grab_list():
         for title in titles:
             dict_links[title.text] = base_url + title['href']
 
-    except Exception as ex:
-        print str(ex)
+    except Exception:
+        traceback.print_exc()
     finally:
         return dict_links
 
@@ -68,8 +70,8 @@ def get_next_review_link(link):
             return link.split('start=')[0] + 'start=' + str(int(link.split('start=')[1]) + 10)
         else:
             return link.split('?')[0] + '/reviews?start=0'
-    except Exception as ex:
-        print str(ex)
+    except Exception:
+        traceback.print_exc()
 
 
 def parse_movie(url, sleep_time=config.interval_sleep_time):
@@ -106,8 +108,8 @@ def parse_movie(url, sleep_time=config.interval_sleep_time):
 
         record = {'title': title, 'summary': summary, 'cast': cast}
 
-    except Exception as ex:
-        print str(ex)
+    except Exception:
+        traceback.print_exc()
     finally:
         return record
 
@@ -136,18 +138,46 @@ def parse_review(url, sleep_time=config.interval_sleep_time):
             index = 0
             for summary in list_summaries:
                 title = summary.h2.text
-                rating = int(summary.select('> img')[0].get('alt').split('/')[0])
+                if len(summary.select('> img')) != 0:
+                    rating = int(summary.select('> img')[0].get('alt').split('/')[0])
+                else:
+                    rating = -1
                 content = list_comments[index].getText(separator=' ').replace('\n', ' ').strip()
                 dict_review = {'title': title, 'rating': rating, 'content': content}
                 list_reviews.append(dict_review)
                 index += 1
 
-    except Exception as ex:
-        print str(ex)
+    except Exception:
+        traceback.print_exc()
     finally:
         return list_reviews
+
+
+def get_review_page_size(url, sleep_time=config.interval_sleep_time):
+    """
+    Get review page size of a movie in total.
+
+    :param url:
+    :param sleep_time:
+    :return:
+    """
+
+    sleep(sleep_time)
+
+    try:
+        soup = get_page(url)
+
+        page_size_info = soup.select('div#tn15content > table tr td')[0].text
+        page_size = int(filter(None, re.split('[ :]+', page_size_info))[-1])
+
+        return page_size
+
+    except Exception:
+        traceback.print_exc()
+        return 0
 
 
 if __name__ == '__main__':
     links = grab_list()
     print [get_next_review_link(l) for l in links.values()]
+    get_review_page_size('http://www.imdb.com/title/tt2316204/reviews?start=0')
