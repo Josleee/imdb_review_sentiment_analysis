@@ -21,8 +21,8 @@ def fetch_reviews(url, fetch_number=0):
         if not list_partial_reviews:
             break
         if fetch_number != 0:
-            progressbar.print_progress(len(list_reviews) + len(list_partial_reviews),
-                                       fetch_number, 'Progress:', 'Complete', 1, 50)
+            progressbar.print_progress(len(list_reviews), fetch_number,
+                                       'Progress:', 'Complete', 1, 50)
             if fetch_number <= len(list_reviews):
                 break
 
