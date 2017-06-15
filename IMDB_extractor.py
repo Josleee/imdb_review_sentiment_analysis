@@ -1,4 +1,3 @@
-import json
 from time import sleep
 
 import requests
@@ -30,15 +29,14 @@ def get_page(url, sleep_time=0, try_times=3):
 def grab_list():
     dict_links = {}
     base_url = 'http://www.imdb.com'
-    # boxoffice can be change to 'top'
+    # boxoffice can be changed to 'top'
     url = base_url + '/chart/' + 'boxoffice'
 
     try:
         soup = get_page(url)
         titles = soup.select('.titleColumn a')
         for title in titles:
-            print title.text
-            dict_links[title.get_text()] = base_url + title['href']
+            dict_links[title.text] = base_url + title['href']
 
     except Exception as ex:
         print str(ex)
@@ -58,16 +56,16 @@ def get_next_review_link(link):
 
 
 # Parse info of an individual movie page
-def parse_movie(url):
+def parse_movie(url, sleep_time=3):
+    record = {}
     title = '-'
     summary = '-'
     cast = []
-    record = {}
+
+    sleep(sleep_time)
+    print('Processing..' + url)
 
     try:
-        sleep(3)
-        url = url.rstrip('\n')
-        print('Processing..' + url)
         soup = get_page(url)
         title_section = soup.select('.title_wrapper > h1')
         summary_section = soup.select('.plot_summary .summary_text')
@@ -75,7 +73,6 @@ def parse_movie(url):
 
         if summary_section:
             summary = summary_section[0].text.strip()
-
         if title_section:
             title = title_section[0].text.strip()
         if cast_list:
@@ -83,7 +80,8 @@ def parse_movie(url):
             for actor in actors:
                 cast.append(actor.text.strip())
 
-            record = {'title': title, 'summary': summary, 'cast': cast}
+        record = {'title': title, 'summary': summary, 'cast': cast}
+
     except Exception as ex:
         print str(ex)
     finally:
@@ -91,38 +89,38 @@ def parse_movie(url):
 
 
 # Parse reviews from the a certain review page
-def parse_review(url):
-    try:
-        sleep(3)
+def parse_review(url, sleep_time=3):
+    list_reviews = []
 
+    sleep(sleep_time)
+
+    try:
         soup = get_page(url)
 
-        title_section = soup.select('.title_wrapper > h1')
-        summary_section = soup.select('.plot_summary .summary_text')
-        cast_list = soup.select('.cast_list')
+        list_summaries = soup.find_all("div", attrs={'id': 'tn15content'})[0] \
+            .find_all('div', class_=None)
+        list_comments = soup.select('div#tn15content > p')
 
-        if summary_section:
-            summary = summary_section[0].text.strip()
-
-        if title_section:
-            title = title_section[0].text.strip()
-        if cast_list:
-            actors = cast_list[0].findAll('span', {'itemprop': 'name'})
-            for actor in actors:
-                cast.append(actor.text.strip())
-
-            record = {'title': title, 'summary': summary, 'cast': cast}
+        if list_comments:
+            index = 0
+            for summary in list_summaries:
+                title = summary.h2.text
+                rating = int(summary.select('> img')[0].get('alt').split('/')[0])
+                content = list_comments[index].getText(separator=' ').replace('\n', ' ').strip()
+                dict_review = {'title': title, 'rating': rating, 'content': content}
+                list_reviews.append(dict_review)
+                index += 1
 
     except Exception as ex:
         print str(ex)
     finally:
-        return record
+        return list_reviews
 
 
 if __name__ == '__main__':
     links = grab_list()
     movies = [get_next_review_link(l) for l in links.values()]
-    print movies
+    print parse_review(movies[0], 1)
 
     # movies = [parse_movie(l) for l in links]
     # # Write in a file
