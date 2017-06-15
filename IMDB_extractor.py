@@ -7,8 +7,16 @@ headers = {
     'headers': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'}
 
 
-# Parse the page for a certain url
 def get_page(url, sleep_time=0, try_times=3):
+    """
+    Parse the page for a certain url.
+
+    :param url:
+    :param sleep_time:
+    :param try_times:
+    :return:
+    """
+
     for i in xrange(0, try_times):
         try:
             url = url.rstrip('\n')
@@ -25,8 +33,13 @@ def get_page(url, sleep_time=0, try_times=3):
             continue
 
 
-# This will grab the links of movie from movies chart
 def grab_list():
+    """
+    This will grab the links of movie from movies chart.
+
+    :return:
+    """
+
     dict_links = {}
     base_url = 'http://www.imdb.com'
     # boxoffice can be changed to 'top'
@@ -44,8 +57,14 @@ def grab_list():
         return dict_links
 
 
-# Get next review page link from exist link
 def get_next_review_link(link):
+    """
+    Get next review page link from exist link
+
+    :param link:
+    :return:
+    """
+
     try:
         if 'reviews' in link:
             return link.split('start=')[0] + 'start=' + str(int(link.split('start=')[1]) + 10)
@@ -55,8 +74,15 @@ def get_next_review_link(link):
         print str(ex)
 
 
-# Parse info of an individual movie page
 def parse_movie(url, sleep_time=3):
+    """
+    Parse info of an individual movie page.
+
+    :param url:
+    :param sleep_time:
+    :return:
+    """
+
     record = {}
     title = '-'
     summary = '-'
@@ -88,8 +114,15 @@ def parse_movie(url, sleep_time=3):
         return record
 
 
-# Parse reviews from the a certain review page
 def parse_review(url, sleep_time=3):
+    """
+    Parse reviews from the a certain review page.
+
+    :param url:
+    :param sleep_time:
+    :return:
+    """
+
     list_reviews = []
 
     sleep(sleep_time)
@@ -121,6 +154,7 @@ if __name__ == '__main__':
     links = grab_list()
     movies = [get_next_review_link(l) for l in links.values()]
     print parse_review(movies[0], 1)
+    print parse_review('http://www.imdb.com/title/tt2316204/reviews?start=10000', 1)
 
     # movies = [parse_movie(l) for l in links]
     # # Write in a file
