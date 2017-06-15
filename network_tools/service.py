@@ -22,8 +22,7 @@ def fetch_reviews(url, fetch_number=0):
         # TODO: fix bug, if url is not the first page of review, we should first calculate the current page number
         total_page_number = imdb_crawler.get_review_page_size(url)
     else:
-        total_page_number = int(math.ceil(fetch_number/10.0))
-    print total_page_number
+        total_page_number = int(math.ceil(fetch_number / 10.0))
 
     while True:
         list_partial_reviews = imdb_crawler.parse_review(url)
@@ -34,7 +33,7 @@ def fetch_reviews(url, fetch_number=0):
                 break
 
         list_reviews.extend(list_partial_reviews)
-        progressbar.print_progress(int(math.ceil(len(list_reviews)/10.0)), total_page_number,
+        progressbar.print_progress(int(math.ceil(len(list_reviews) / 10.0)), total_page_number,
                                    'Progress:', 'Complete', 1, 50)
         url = imdb_crawler.get_next_review_link(url)
 
