@@ -1,10 +1,13 @@
+import time
+
+from network_tools import config
 from network_tools import service
 from utilities import caching
 
 
-def cache_top_10_hot_films():
+def scrape_films_by_config_settings():
     """
-    Fetch top 10 films' reviews and same them to local data file.
+    Scrape films' reviews and save them to local data file.
 
     """
 
@@ -15,22 +18,28 @@ def cache_top_10_hot_films():
         print 'Scraping reviews of movie "' + key + '".'
         dict_reviews[key] = service.fetch_reviews(value)
 
-    caching.dump_to_file(dict_reviews, 'top10')
+    caching.dump_to_file(dict_reviews, config.chart_category[config.category_selector])
 
 
-def get_top_10_hot_films_from_file():
+def get_films_from_file_by_config_settings():
     """
-    Get top 10 hot films from local file
+    Get film reviews cache from local file
 
-    :return: film name + reviews dict
+    :return: dict of film name + reviews
     """
 
-    dict_reviews = caching.read_from_file('top10')
+    dict_reviews = caching.read_from_file(config.chart_category[config.category_selector])
     return dict_reviews
 
 
 if __name__ == '__main__':
-    # cache_top_10_hot_films()
-    for data in get_top_10_hot_films_from_file().values():
+    t1 = time.time()
+    # scrape_films_by_config_settings()
+    t2 = time.time()
+
+    for data in get_films_from_file_by_config_settings().values():
         for review in data:
             print review['title']
+    t3 = time.time()
+
+    print 'Scraping time spent: %ds, reading time spent: %ds' % ((t2 - t1), (t3 - t2))

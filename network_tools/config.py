@@ -12,4 +12,4 @@ try_times = 5
 # Box Office, Most Popular Movies, Top Rated Movies, Top Rated English Movies, Lowest Rated Movies
 chart_category = ['boxoffice', 'moviemeter', 'top', 'top-english-movies', 'bottom']
 # 0 ~ 4 corresponding to description above
-category_selector = 1
+category_selector = 3
