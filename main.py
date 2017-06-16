@@ -18,7 +18,7 @@ def scrape_films_by_config_settings():
         print 'Scraping reviews of movie "' + key + '".'
         dict_reviews[key] = service.fetch_reviews(value)
 
-    caching.dump_to_file(dict_reviews, config.chart_category[config.category_selector])
+    caching.dump_to_file(dict_reviews, config.chart_category[config.category_selector], 0)
 
 
 def get_films_from_file_by_config_settings():
@@ -28,7 +28,7 @@ def get_films_from_file_by_config_settings():
     :return: dict of film name + reviews
     """
 
-    dict_reviews = caching.read_from_file(config.chart_category[config.category_selector])
+    dict_reviews = caching.read_from_file(config.chart_category[config.category_selector], 0)
     return dict_reviews
 
 
