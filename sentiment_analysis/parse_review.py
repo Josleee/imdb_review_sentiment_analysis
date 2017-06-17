@@ -1,8 +1,15 @@
 import re
 from collections import OrderedDict
 
+import nltk
+import spacy
+from nltk.corpus import wordnet
+from nltk.stem.porter import PorterStemmer
+
 from network_tools import config
 from utilities import caching
+
+nlp = spacy.load('en')
 
 
 def parse_review():
@@ -54,3 +61,11 @@ def display_top_hit(result):
 
 if __name__ == '__main__':
     display_top_hit(parse_review())
+    print wordnet.synsets('cat')
+    nltk.download()
+    ps = PorterStemmer()
+    print ps.stem('provide')
+
+    doc = nlp(u'They told us to duck.')
+    for word in doc:
+        print(word.text, word.lemma, word.lemma_, word.tag, word.tag_, word.pos, word.pos_)
