@@ -13,3 +13,8 @@ try_times = 5
 chart_category = ['boxoffice', 'moviemeter', 'top', 'top-english-movies', 'bottom']
 # 0 ~ 4 corresponding to description above
 category_selector = 0
+
+
+# tags
+def get_tag_analyzed():
+    return 'analyzed_' + chart_category[category_selector]

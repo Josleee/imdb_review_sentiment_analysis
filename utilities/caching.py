@@ -1,4 +1,5 @@
 import json
+import os.path
 import traceback
 
 
@@ -19,13 +20,16 @@ def dump_to_file(caching_data, filename, directory):
 def read_from_file(filename, directory):
     """
     Read data from file.
+
     :param filename:
     :param directory:
-
-    :return:
+    :return: if the file is not exist, return None; otherwise, return the data
     """
 
     caching_data = {}
+
+    if not os.path.isfile('../' * directory + 'data/' + filename + '.json'):
+        return None
 
     with open('../' * directory + 'data/' + filename + '.json', 'r') as f:
         try:
