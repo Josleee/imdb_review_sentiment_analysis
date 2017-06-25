@@ -6,6 +6,7 @@ from nltk.corpus import wordnet
 from nltk.stem.porter import PorterStemmer
 
 from network_tools import config
+from sentiment_analysis.parse_discourse import DiscourseParser
 from utilities import caching, progressbar
 
 nlp = spacy.load('en')
@@ -78,10 +79,15 @@ if __name__ == '__main__':
     #     data = caching.read_from_file(config.get_tag_analyzed(), 1)
     #     display_top_hit(data)
 
-
+    parser = DiscourseParser('../data/to_be_analysed/review.txt')
+    parser.parse()
+    for ds in parser.get_summary():
+        separated_words = nlp(str(ds['content']).lower())
+        for word in separated_words:
+            print word
+    parser.unload()
 
     # print wordnet.synsets('cat')
-    nltk.download()
     # ps = PorterStemmer()
     # print ps.stem('provide')
 

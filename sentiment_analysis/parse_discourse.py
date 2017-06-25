@@ -1,3 +1,4 @@
+import json
 import os.path
 import re
 import traceback
@@ -81,9 +82,15 @@ class DiscourseParser:
     def parse(self, file_name=None):
         if not file_name:
             file_name = self.file_name
+        else:
+            self.file_name = file_name
 
         if not os.path.exists(file_name):
             print '%s does not exist.' % file_name
+            return
+
+        if os.path.exists(file_name + '.smr') and os.path.exists(file_name + '.dis'):
+            print 'Successfully read caching from files.'
             return
 
         print 'Parsing %s' % file_name
@@ -131,6 +138,14 @@ class DiscourseParser:
                     self.smg_tree = utils.utils.print_SGML_tree(pt)
                     self.summary = utils.utils.print_summary(pt)
 
+                    caching_summary_file = file_name + '.%s' % 'smr'
+                    with open(caching_summary_file, 'w') as f:
+                        json.dump(self.summary, f)
+
+                    caching_tree_file = file_name + '.%s' % 'dis'
+                    with open(caching_tree_file, 'w') as f:
+                        f.write(self.get_smg_tree())
+
         except Exception, e:
             print traceback.print_exc()
             if self.segmenter is not None:
@@ -140,15 +155,24 @@ class DiscourseParser:
             raise
 
     def get_smg_tree(self):
-        return self.smg_tree
+        if not self.smg_tree:
+            with open(self.file_name + '.dis', 'r') as f:
+                return f.read()
+        else:
+            return self.smg_tree
 
     def get_summary(self):
-        return self.summary
+        if not self.summary:
+            with open(self.file_name + '.smr', 'r') as f:
+                return json.load(f)
+        else:
+            return self.summary
 
 
 if __name__ == '__main__':
     parser = DiscourseParser('../data/to_be_analysed/review3.txt')
     parser.parse()
+    print parser.get_smg_tree()
     for ds in parser.get_summary():
         print ds
     parser.unload()
