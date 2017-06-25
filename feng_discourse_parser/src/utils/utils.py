@@ -204,29 +204,18 @@ def get_sent_dependencies(deps):
     return sent2dep_list
 
 
-def print_summarization(parse_tree, offset=1, depth=0, status=None, relation=None):
-    out = ''
-    for i in range(depth):
-        out += '  '
-
+def print_summary(parse_tree, offset=1, depth=0, status=None, relation=None, rtn=[]):
     if isinstance(parse_tree, basestring):
         if status == 'Nucleus':
-            print '%s: %s' % (offset, parse_tree)
-        return out + '( %s (leaf %d) (rel2par %s) (text _!%s_!) )\n' % (status, offset,
-                                                                        relation, parse_tree)
-
-    out += '( %s (span %d %d)' % ('Root' if depth == 0 else status, offset, offset + len(parse_tree.leaves()) - 1)
-
-    if depth > 0:
-        out += ' (rel2par %s)' % relation
-
-    out += '\n'
+            content = re.sub('<s>|<p>|!_|_!', '', parse_tree)
+            return rtn.append({'offset': offset, 'content': content.strip()})
+            # return rtn.append('%s: %s' % (offset, content.strip()))
+        else:
+            return rtn
 
     left = parse_tree[0]
-    # print left
     left_status = 'Nucleus' if parse_tree.node[-5] == 'N' else 'Satellite'
     right = parse_tree[1]
-    # print right
     right_status = 'Nucleus' if parse_tree.node[-2] == 'N' else 'Satellite'
 
     if left_status[0] == 'S' and right_status[0] == 'N':
@@ -239,15 +228,11 @@ def print_summarization(parse_tree, offset=1, depth=0, status=None, relation=Non
         left_relation = parse_tree.node[: -6]
         right_relation = left_relation
 
-    out += print_summarization(left, offset, depth + 1, left_status, left_relation)
-    out += print_summarization(right, offset + (len(left.leaves()) if isinstance(left, Tree) else 1), depth + 1,
-                               right_status, right_relation)
+    print_summary(left, offset, depth + 1, left_status, left_relation)
+    print_summary(right, offset + (len(left.leaves()) if isinstance(left, Tree) else 1),
+                  depth + 1, right_status, right_relation)
 
-    for i in range(depth):
-        out += '  '
-    out += ')\n'
-
-    return out
+    return rtn
 
 
 def print_SGML_tree(parse_tree, offset=1, depth=0, status=None, relation=None):

@@ -228,7 +228,7 @@ class DiscourseParser():
 
                     treeBuildEnd = time.time()
 
-                    print utils.utils.print_summarization(pt)
+                    print utils.utils.print_summary(pt)
                     print 'finished tree building in %.2f seconds' % (treeBuildEnd - treeBuildStart)
 
 
