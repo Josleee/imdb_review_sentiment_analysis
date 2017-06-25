@@ -42,7 +42,8 @@ class DiscourseParser():
         initStart = time.time()
         try:
             self.segmenter = Segmenter(_model_path=os.path.join(paths.SEG_MODEL_PATH),
-                                       _model_file="training.scaled.model", _scale_model_file="bin_scale",
+                                       _model_file="training.scaled.model",
+                                       _scale_model_file="bin_scale",
                                        _name="segmenter",
                                        verbose=self.verbose, dependencies=self.dependencies)
 
@@ -278,8 +279,8 @@ if __name__ == '__main__':
             print usage
             sys.exit(1)
 
-        parser = DiscourseParser(verbose=options.verbose, seg=options.seg, output=options.output, SGML=options.SGML,
-                                 edus=options.edus)
+        parser = DiscourseParser(verbose=options.verbose, seg=options.seg,
+                                 output=options.output, SGML=options.SGML, edus=options.edus)
 
         if options.directory:
             for subdir in args:

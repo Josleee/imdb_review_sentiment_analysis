@@ -7,8 +7,8 @@ Created on 2013-02-17
 import subprocess
 
 import paths
-import random
 import os
+from utils import utils
 
 
 class SVMClassifier:
@@ -37,38 +37,39 @@ class SVMClassifier:
 
         if class_type == 'bin':
             if bin_scale_model_file:
-                self.svm_scale_cmd = '%s/svm-scale -r %s' % (paths.SVM_TOOLS, model_path + bin_scale_model_file)
+                self.svm_scale_cmd = '%s/svm-scale -r %s' % (utils.shell_escape(paths.SVM_TOOLS), utils.shell_escape(model_path) + bin_scale_model_file)
 
             if software == 'libsvm':
                 # self.svm_classifier_cmd = 'java -cp "%s" %s %s' % (paths.SVM_TOOLS + 'libsvm', 'svm_predict_stdin', model_path + bin_model_file)
-                self.svm_classifier_cmd = paths.SVM_TOOLS + 'libsvm/svm-predict-stdin ' + model_path + bin_model_file
+                self.svm_classifier_cmd = utils.shell_escape(paths.SVM_TOOLS) + 'libsvm/svm-predict-stdin ' + utils.shell_escape(model_path) + bin_model_file
             elif software == 'liblinear':
-                self.svm_classifier_cmd = paths.SVM_TOOLS + 'liblinear/predict_stdin -b 1 ' + model_path + bin_model_file
+                self.svm_classifier_cmd = utils.shell_escape(paths.SVM_TOOLS) + 'liblinear/predict_stdin -b 1 ' + utils.shell_escape(model_path) + bin_model_file
             else:
-                self.svm_classifier_cmd = paths.SVM_TOOLS + 'svm_perf_classify ' + model_path + bin_model_file
+                self.svm_classifier_cmd = utils.shell_escape(paths.SVM_TOOLS) + 'svm_perf_classify ' + utils.shell_escape(model_path) + bin_model_file
 
-            #                signature = 'bin_' + str(random.getrandbits(64))
-            #                self.tmp_test_fname = paths.MODEL_PATH + 'tmp_test_' + signature
-            #                self.tmp_predictions_fname = paths.MODEL_PATH + 'tmp_predictions_' + signature
-            #
-            #                self.bin_model_file = model_path + bin_model_file
+                # signature = 'bin_' + str(random.getrandbits(64))
+                # self.tmp_test_fname = paths.MODEL_PATH + 'tmp_test_' + signature
+                # self.tmp_predictions_fname = paths.MODEL_PATH + 'tmp_predictions_' + signature
+                #
+                # self.bin_model_file = model_path + bin_model_file
         else:
             if mc_scale_model_file:
-                self.svm_scale_cmd = '%s/svm-scale -r %s' % (paths.SVM_TOOLS, model_path + mc_scale_model_file)
+                self.svm_scale_cmd = '%s/svm-scale -r %s' % (utils.shell_escape(paths.SVM_TOOLS), utils.shell_escape(model_path) + mc_scale_model_file)
 
             if software == 'libsvm':
-                self.svm_classifier_cmd = paths.SVM_TOOLS + 'libsvm/svm-predict-stdin -b 1 ' + model_path + mc_model_file
+                self.svm_classifier_cmd = utils.shell_escape(paths.SVM_TOOLS) + 'libsvm/svm-predict-stdin -b 1 ' + utils.shell_escape(model_path) + mc_model_file
             else:
-                #                signature = 'mc_' + str(random.getrandbits(64))
-                #                self.tmp_test_fname = paths.MODEL_PATH + 'tmp_test_' + signature
-                #                self.tmp_predictions_fname = paths.MODEL_PATH + 'tmp_predictions_' + signature
+                # signature = 'mc_' + str(random.getrandbits(64))
+                # self.tmp_test_fname = paths.MODEL_PATH + 'tmp_test_' + signature
+                # self.tmp_predictions_fname = paths.MODEL_PATH + 'tmp_predictions_' + signature
                 #
-                #                self.mc_model_file = model_path + mc_model_file
+                # self.mc_model_file = model_path + mc_model_file
 
-                self.svm_classifier_cmd = paths.SVM_TOOLS + 'svm_multiclass_classify ' + model_path + mc_model_file
+                self.svm_classifier_cmd = utils.shell_escape(paths.SVM_TOOLS) + 'svm_multiclass_classify ' + utils.shell_escape(model_path) + mc_model_file
 
         # print self.svm_scale_cmd
         if self.svm_scale_cmd:
+            # print 'svm_scale_cmd: ' + self.svm_scale_cmd
             self.svm_scale = subprocess.Popen(self.svm_scale_cmd, shell=True,
                                               stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
@@ -79,7 +80,7 @@ class SVMClassifier:
             self.svm_scale = None
 
         if self.svm_classifier_cmd:
-            # print self.svm_classifier_cmd
+            # print 'svm_classifer_cmd: ' + self.svm_classifier_cmd
             self.svm_classifier = subprocess.Popen(self.svm_classifier_cmd, shell=True,
                                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 

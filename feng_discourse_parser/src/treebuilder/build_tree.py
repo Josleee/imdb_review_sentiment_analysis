@@ -110,7 +110,7 @@ class TreeBuilder:
     def classify_pair(self, stumps, pair, offsets, i, stumps_mc_scores=None, stumps_bin_scores=None):
         if self.use_contextual_features and self.prev_tree is not None:
             (prev_stump, next_stump) = utils.utils.get_context_stumps(self.prev_tree, stumps, pair, i)
-        #            print 'L:', stumps[i]
+        # print 'L:', stumps[i]
         #            print 'R:', stumps[i+1]
         #            print pair
         #            print 'prev:', prev_stump

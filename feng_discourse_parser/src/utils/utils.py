@@ -56,6 +56,20 @@ def argsmax(array, how_many):
     return L
 
 
+def shell_escape(path):
+    if path.find('('):
+        path = path.replace('(', '\(')
+    if path.find(')'):
+        path = path.replace(')', '\)')
+    if path.find(' '):
+        path = path.replace(' ', '\ ')
+    return path
+
+
+def shell_quote(s):
+    return "'" + s.replace("'", "'\\''") + "'"
+
+
 def count_how_many(array, item):
     tot = 0
     for array_item in array:

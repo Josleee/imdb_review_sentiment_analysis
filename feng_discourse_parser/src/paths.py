@@ -4,9 +4,9 @@ Created on 2013-02-17
 @author: Vanessa Wei Feng
 '''
 import os.path
-import sys
 
-ROOT_PATH = '/'.join(os.path.split(os.getcwd())[: -1])
+# ROOT_PATH = '/'.join(os.path.split(os.getcwd())[: -1])
+ROOT_PATH = os.path.split(os.path.dirname(__file__))[0]
 
 # if getattr(sys, 'frozen', None):
 #     ROOT_PATH = sys._MEIPASS
