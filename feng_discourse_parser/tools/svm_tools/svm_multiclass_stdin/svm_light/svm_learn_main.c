@@ -285,7 +285,7 @@ void print_help()
   wait_any_key();
   printf("\nMore details in:\n");
   printf("[1] T. Joachims, Making Large-Scale SVM Learning Practical. Advances in\n");
-  printf("    Kernel Methods - Support Vector Learning, B. Schölkopf and C. Burges and\n");
+  printf("    Kernel Methods - Support Vector Learning, B. Schï¿½lkopf and C. Burges and\n");
   printf("    A. Smola (ed.), MIT Press, 1999.\n");
   printf("[2] T. Joachims, Estimating the Generalization performance of an SVM\n");
   printf("    Efficiently. International Conference on Machine Learning (ICML), 2000.\n");
