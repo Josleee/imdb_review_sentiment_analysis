@@ -9,6 +9,7 @@ from string import *
 import re
 from yappsrt import *
 
+
 class TreebankScanner(Scanner):
     patterns = [
         ('r"\\)"', re.compile('\\)')),
@@ -20,8 +21,10 @@ class TreebankScanner(Scanner):
         ('ID', re.compile('[-+*/!@$%^&=.a-zA-Z0-9]+')),
         ('STR', re.compile('(.)+_!')),
     ]
+
     def __init__(self, str):
-        Scanner.__init__(self,None,['\\s+', '//TT_ERR'],str)
+        Scanner.__init__(self, None, ['\\s+', '//TT_ERR'], str)
+
 
 class Treebank(Parser):
     def expr(self):
@@ -36,7 +39,7 @@ class Treebank(Parser):
         elif _token_ == 'NUM':
             NUM = self._scan('NUM')
             return atoi(NUM)
-        else:# == 'r"\\("'
+        else:  # == 'r"\\("'
             self._scan('r"\\("')
             ID = self._scan('ID')
             e = []
@@ -56,7 +59,8 @@ def parse(text):
     P = Treebank(TreebankScanner(text))
     return wrap_error_reporter(P, 'expr')
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     print 'Testing'
     f = open('./texts/wsj_0613.out.dis')
     str = f.read()
@@ -65,4 +69,3 @@ if __name__=='__main__':
         print subtree
         print
     print 'Bye.'
-

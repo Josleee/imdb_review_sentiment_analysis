@@ -226,7 +226,8 @@ def print_summarization(parse_tree, offset=1, depth=0, status=None, relation=Non
         right_relation = left_relation
 
     out += print_summarization(left, offset, depth + 1, left_status, left_relation)
-    out += print_summarization(right, offset + (len(left.leaves()) if isinstance(left, Tree) else 1), depth + 1, right_status, right_relation)
+    out += print_summarization(right, offset + (len(left.leaves()) if isinstance(left, Tree) else 1), depth + 1,
+                               right_status, right_relation)
 
     for i in range(depth):
         out += '  '
@@ -526,8 +527,8 @@ def get_adjacent_stump(prev_tree, i, scope, pos='L'):
 
             treepos = parent_treepos
 
-        #            if not parent_prev_scope and not scope:
-        #                break
+            #            if not parent_prev_scope and not scope:
+            #                break
 
     prev_pair = prev_tree[treepos]
     prev_scope = is_within_sentence(prev_pair)

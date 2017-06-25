@@ -12,12 +12,14 @@ import paths
 
 save_suffix = ".dat"
 
-def saveData(filename, myobject, where = paths.save_folder, suffix = save_suffix):
+
+def saveData(filename, myobject, where=paths.save_folder, suffix=save_suffix):
     fo = open(where + filename + suffix, "wb")
-    cPickle.dump(myobject, fo, protocol = cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump(myobject, fo, protocol=cPickle.HIGHEST_PROTOCOL)
     fo.close()
 
-def loadData(filename, where = paths.save_folder, suffix = save_suffix):
+
+def loadData(filename, where=paths.save_folder, suffix=save_suffix):
     data_file = where + filename + suffix
     try:
         fo = open(data_file, "rb")
