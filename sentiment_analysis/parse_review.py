@@ -70,19 +70,21 @@ def display_top_hit(result):
 
 
 if __name__ == '__main__':
-    if not caching.read_from_file(config.get_tag_analyzed(), 1):
-        data = parse_review()
-        caching.dump_to_file(data, config.get_tag_analyzed(), 1)
-        display_top_hit(data)
-    else:
-        data = caching.read_from_file(config.get_tag_analyzed(), 1)
-        display_top_hit(data)
+    # if not caching.read_from_file(config.get_tag_analyzed(), 1):
+    #     data = parse_review()
+    #     caching.dump_to_file(data, config.get_tag_analyzed(), 1)
+    #     display_top_hit(data)
+    # else:
+    #     data = caching.read_from_file(config.get_tag_analyzed(), 1)
+    #     display_top_hit(data)
+
+
 
     # print wordnet.synsets('cat')
-    # nltk.download()
+    nltk.download()
     # ps = PorterStemmer()
     # print ps.stem('provide')
-    #
+
     # doc = nlp(u'They told us to duck.')
     # for word in doc:
     #     print(word.text, word.lemma, word.lemma_, word.tag, word.tag_, word.pos, word.pos_)
