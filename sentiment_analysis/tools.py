@@ -9,17 +9,15 @@ def negation_cues_cal(sentence):
     :return:
     """
 
-    polarity = 1
+    polarity = True
 
     for cue in constant.negation_cues_set:
         for word in sentence:
-            if cue == word.text:
-                print word.text
-                polarity *= -1
+            if cue == word.lower_:
+                polarity = not polarity
 
     for word in sentence:
-        if 'n\'t' in word.text:
-            print word.text
-            polarity *= -1
+        if 'n\'t' in word.lower_:
+            polarity = not polarity
 
     return polarity
