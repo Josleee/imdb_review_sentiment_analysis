@@ -1,4 +1,4 @@
-exceptional_set = ['that', 'alien', 'my', 'his', 'which', 'your', 'their', 'its', 'her']
+exceptional_set = ['that', 'my', 'his', 'which', 'your', 'their', 'its', 'her', 'alien']
 
 negation_cues_set = ['aint', 'cannot', 'cant', 'darent', 'didnt', 'doesnt', 'dont', 'hadnt', 'hardly', 'hasnt',
                      'havent', 'havnt', 'isnt', 'lack', 'lacking', 'lacks', 'neither', 'never', 'no', 'nobody',
