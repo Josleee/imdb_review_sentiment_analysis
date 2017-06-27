@@ -11,8 +11,15 @@ def negation_cues_cal(sentence):
 
     polarity = 1
 
-    for word in constant.negation_cues_set:
-        if word in sentence:
+    for cue in constant.negation_cues_set:
+        for word in sentence:
+            if cue == word.text:
+                print word.text
+                polarity *= -1
+
+    for word in sentence:
+        if 'n\'t' in word.text:
+            print word.text
             polarity *= -1
 
     return polarity

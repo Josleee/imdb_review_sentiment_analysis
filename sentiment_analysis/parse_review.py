@@ -1,10 +1,9 @@
-import re
 from collections import OrderedDict
 
 import spacy
 
 from network_tools import config
-from sentiment_analysis import constant
+from sentiment_analysis import constant, tools
 from utilities import caching, progressbar
 
 nlp = spacy.load('en')
@@ -33,11 +32,18 @@ class ReviewParser:
                 if comment['rating'] == -1:
                     comment['rating'] = 0
 
-                sentences = filter(None, re.split('[.?!]+', comment['content']))
+                sentences = []
+                parsed_data = nlp(comment['title'])
+                # for span in parsed_data.sents:
+                # go from the start to the end of each span, returning each token in the sentence
+                # combine each token using join()
+                # sent = ''.join(parsed_data[i].string for i in range(span.start, span.end)).strip()
+                # sentences.append(sent)
+
+                # sentences = filter(None, re.split('[.?!]+', comment['content']))
                 # separated_words = filter(None, re.split('[ ,.:()?"/]+', comment['content'].lower()))
-                for sentence in sentences:
-                    separated_words = nlp(sentence.lower())
-                    for word in separated_words:
+                for sentence in parsed_data.sents:
+                    for word in sentence:
                         if word.text in constant.exceptional_set:
                             continue
 
@@ -82,17 +88,21 @@ class ReviewParser:
 
 
 if __name__ == '__main__':
-    # separated_words = nlp(unicode("Because it's the same story but you don't care who wins or loses.".lower()))
-    # if "it's" in separated_words.text[:]:
-    #     print True
+    parsed_data = nlp(unicode(
+        'Because it\'s the same story but you don\'t care who wins or loses. you just want the franchise to please end. Sorry Mr Bay but this is a total and utter failure.'))
+    for span in parsed_data.sents:
+        print tools.negation_cues_cal(span)
+        for word in span:
+            print word.text
+        print
 
-    rw_parser = ReviewParser()
-    rw_parser.display_top_hit('ADJ', 30)
+        # r_parser = ReviewParser()
+        # r_parser.display_top_hit('ADJ', 30)
 
-    # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
-    # parser.parse()
-    # for ds in parser.get_summary():
-    #     separated_words = nlp(ds['content'].lower())
-    #     for word in separated_words:
-    #         print word.pos_, word.text
-    # parser.unload()
+        # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
+        # parser.parse()
+        # for ds in parser.get_summary():
+        #     separated_words = nlp(ds['content'].lower())
+        #     for word in separated_words:
+        #         print word.pos_, word.text
+        # parser.unload()
