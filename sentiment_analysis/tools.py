@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
 from sentiment_analysis import constant
 
 
@@ -21,3 +24,22 @@ def negation_cues_cal(sentence):
             polarity = not polarity
 
     return polarity
+
+
+def display_word_frequency_distribution(dict_y_values):
+    """
+    Plot word frequency distribution figure
+
+    :param dict_y_values:
+    :return:
+    """
+
+    for key, values in dict_y_values.iteritems():
+        x = np.array(range(1, 11), np.int32)
+        y = np.array(values, np.float)
+        plt.plot(x, y, label=key)
+        plt.xlabel('Rating')
+        plt.ylabel('Frequency rate')
+
+    plt.legend()
+    plt.show()

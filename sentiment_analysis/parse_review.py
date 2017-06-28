@@ -156,7 +156,6 @@ class ReviewParser:
                 continue
 
             for i in xrange(1, 11):
-                print value[i][word]
                 if word in value[i]:
                     list_frequency_rate.append(value[i][word] * 100 / float(len(value[i])))
                 else:
@@ -180,7 +179,10 @@ if __name__ == '__main__':
     r_parser.display_top_hit('ADJ', True, 30)
     r_parser.display_top_hit('ADJ', False, 30)
     # r_parser.find_sample(10, 'good', 10)
-    print r_parser.get_word_frequency_rate('good', 'ADJ')
+    dict_y_values_with_type = {'bad': r_parser.get_word_frequency_rate('bad', 'ADJ'),
+                               'good': r_parser.get_word_frequency_rate('good', 'ADJ'),
+                               'great': r_parser.get_word_frequency_rate('great', 'ADJ')}
+    tools.display_word_frequency_distribution(dict_y_values_with_type)
 
     # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
     # parser.parse()
