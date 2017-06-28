@@ -26,20 +26,55 @@ def negation_cues_cal(sentence):
     return polarity
 
 
-def display_word_frequency_distribution(dict_y_values):
+def display_word_frequency_distribution(list_y_values, all_data=True):
     """
-    Plot word frequency distribution figure
+    Plot word frequency rate distribution figure
 
-    :param dict_y_values:
+    :param list_y_values:
+    :param all_data: if not pass this variable, the instantly plot the figure; otherwise or False,
+            wait for next calling with the variable set to be True or default
     :return:
     """
 
-    for key, values in dict_y_values.iteritems():
-        x = np.array(range(1, 11), np.int32)
-        y = np.array(values, np.float)
-        plt.plot(x, y, label=key)
-        plt.xlabel('Rating')
-        plt.ylabel('Frequency rate')
+    if not list_y_values:
+        return
 
-    plt.legend()
-    plt.show()
+    for item in list_y_values:
+        x = np.array(range(1, 11), np.int32)
+        y = np.array(item['list'], np.float)
+        plt.plot(x, y, label=item['key_word'])
+        plt.xlabel('Rating (stars)')
+        plt.ylabel('Frequency rate (%)')
+
+    if all_data:
+        plt.legend()
+        plt.show()
+
+
+def fit_curve(list_y_values):
+    """
+    Fit the frequency rate distribution using curves
+
+    :param list_y_values:
+    :return:
+    """
+
+    if not list_y_values:
+        return
+
+    fit_list_y_values = []
+
+    for item in list_y_values:
+        x = np.array(range(1, 11), np.int32)
+        y = np.array(item['list'], np.float)
+
+        z = np.polyfit(x, y, 3)
+        f = np.poly1d(z)
+        # fit_x = np.linspace(x[0], x[-1], 50)
+        # fit_y = f(fit_x)
+        fit_y = f(x)
+
+        fit_list_y_values.append({'key_word': 'fit-' + item['key_word'], 'pos_type': item['pos_type'],
+                                  'list': fit_y.tolist()})
+
+    return fit_list_y_values

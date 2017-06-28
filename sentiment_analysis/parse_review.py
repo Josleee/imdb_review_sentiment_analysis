@@ -161,7 +161,7 @@ class ReviewParser:
                 else:
                     list_frequency_rate.append(0)
 
-        return list_frequency_rate
+        return {'key_word': word, 'pos_type': pos_type, 'list': list_frequency_rate}
 
 
 if __name__ == '__main__':
@@ -179,10 +179,26 @@ if __name__ == '__main__':
     r_parser.display_top_hit('ADJ', True, 30)
     r_parser.display_top_hit('ADJ', False, 30)
     # r_parser.find_sample(10, 'good', 10)
-    dict_y_values_with_type = {'bad': r_parser.get_word_frequency_rate('bad', 'ADJ'),
-                               'good': r_parser.get_word_frequency_rate('good', 'ADJ'),
-                               'great': r_parser.get_word_frequency_rate('great', 'ADJ')}
-    tools.display_word_frequency_distribution(dict_y_values_with_type)
+    list_words_frequency = [
+        r_parser.get_word_frequency_rate('bad', 'ADJ'),
+        r_parser.get_word_frequency_rate('good', 'ADJ'),
+        r_parser.get_word_frequency_rate('first', 'ADJ'),
+        r_parser.get_word_frequency_rate('original', 'ADJ'),
+        r_parser.get_word_frequency_rate('great', 'ADJ')
+    ]
+    # list_words_frequency = [
+    #     r_parser.get_word_frequency_rate('stupid', 'ADJ'),
+    #     r_parser.get_word_frequency_rate('terrible', 'ADJ'),
+    #     r_parser.get_word_frequency_rate('old', 'ADJ'),
+    #     r_parser.get_word_frequency_rate('boring', 'ADJ'),
+    #     r_parser.get_word_frequency_rate('best', 'ADJ')
+    # ]
+    # list_words_frequency = [
+    #     r_parser.get_word_frequency_rate('interesting', 'ADJ'),
+    #     r_parser.get_word_frequency_rate('predictable', 'ADJ')
+    # ]
+    tools.display_word_frequency_distribution(list_words_frequency, False)
+    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
     # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
     # parser.parse()
