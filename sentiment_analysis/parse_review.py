@@ -18,19 +18,21 @@ class ReviewParser:
 
         """
 
-        self.pos_dict_statistic = {}
-        self.neg_dict_statistic = {}
+        self.dict_neg_scores = {}
+        self.dict_pos_scores = {}
+        self.dict_pos_statistic = {}
+        self.dict_neg_statistic = {}
 
         if caching.read_from_file(config.get_tag_analyzed(), 1):
             list_dict = caching.read_from_file(config.get_tag_analyzed(), 1)
-            self.pos_dict_statistic = list_dict[0]
-            self.neg_dict_statistic = list_dict[1]
+            self.dict_pos_statistic = list_dict[0]
+            self.dict_neg_statistic = list_dict[1]
             return
 
         self.dict_reviews = caching.read_from_file(config.chart_category[config.category_selector], 1)
 
         index = 0
-        progressbar.print_progress(index, len(self.dict_reviews), 'Progress:', 'Complete', 1, 50)
+        progressbar.print_progress(index, len(self.dict_reviews), 'Analysing progress:', 'Complete', 1, 50)
         for key, value in self.dict_reviews.iteritems():
             for comment in value:
                 if comment['rating'] == -1:
@@ -50,29 +52,29 @@ class ReviewParser:
                     negation_polarity = tools.negation_cues_cal(sentence)
 
                     for word in sentence:
-                        if word.lower_ in constant.exceptional_set:
-                            continue
+                        # if word.lower_ in constant.exceptional_set:
+                        #     continue
 
                         # Add a dictionary in the two POS list
-                        if word.pos_ not in self.pos_dict_statistic:
-                            self.pos_dict_statistic[word.pos_] = [dict() for i in range(0, 11)]
-                        if word.pos_ not in self.neg_dict_statistic:
-                            self.neg_dict_statistic[word.pos_] = [dict() for i in range(0, 11)]
+                        if word.pos_ not in self.dict_pos_statistic:
+                            self.dict_pos_statistic[word.pos_] = [dict() for i in range(0, 11)]
+                        if word.pos_ not in self.dict_neg_statistic:
+                            self.dict_neg_statistic[word.pos_] = [dict() for i in range(0, 11)]
 
                         if negation_polarity:
-                            if word.lower_ not in self.pos_dict_statistic[word.pos_][comment['rating']]:
-                                self.pos_dict_statistic[word.pos_][comment['rating']][word.lower_] = 1
+                            if word.lower_ not in self.dict_pos_statistic[word.pos_][comment['rating']]:
+                                self.dict_pos_statistic[word.pos_][comment['rating']][word.lower_] = 1
                             else:
-                                self.pos_dict_statistic[word.pos_][comment['rating']][word.lower_] += 1
+                                self.dict_pos_statistic[word.pos_][comment['rating']][word.lower_] += 1
                         else:
-                            if word.lower_ not in self.neg_dict_statistic[word.pos_][comment['rating']]:
-                                self.neg_dict_statistic[word.pos_][comment['rating']][word.lower_] = 1
+                            if word.lower_ not in self.dict_neg_statistic[word.pos_][comment['rating']]:
+                                self.dict_neg_statistic[word.pos_][comment['rating']][word.lower_] = 1
                             else:
-                                self.neg_dict_statistic[word.pos_][comment['rating']][word.lower_] += 1
+                                self.dict_neg_statistic[word.pos_][comment['rating']][word.lower_] += 1
 
             index += 1
             progressbar.print_progress(index, len(self.dict_reviews), 'Progress:', 'Complete', 1, 50)
-        caching.dump_to_file([self.pos_dict_statistic, self.neg_dict_statistic], config.get_tag_analyzed(), 1)
+        caching.dump_to_file([self.dict_pos_statistic, self.dict_neg_statistic], config.get_tag_analyzed(), 1)
 
     def display_top_hit(self, pos_type, dict_type, top_n=10):
         """
@@ -85,10 +87,10 @@ class ReviewParser:
         """
 
         if dict_type:
-            iter_dict = self.pos_dict_statistic
+            iter_dict = self.dict_pos_statistic
             dict_name = 'Positive word list'
         else:
-            iter_dict = self.neg_dict_statistic
+            iter_dict = self.dict_neg_statistic
             dict_name = 'Negative word list'
 
         for key, value in iter_dict.iteritems():
@@ -151,7 +153,7 @@ class ReviewParser:
 
         list_frequency_rate = []
 
-        for key, value in self.pos_dict_statistic.iteritems():
+        for key, value in self.dict_pos_statistic.iteritems():
             if key != pos_type:
                 continue
 
@@ -161,7 +163,50 @@ class ReviewParser:
                 else:
                     list_frequency_rate.append(0)
 
-        return {'key_word': word, 'pos_type': pos_type, 'list': list_frequency_rate}
+        return {'key_word': word, 'pos_type': pos_type, 'list': list_frequency_rate, 'fitted': False}
+
+    def score_all_adj_by_frequency_rates(self):
+        """
+        Analyse word frequency and generate two adj score lists for sentiment prediction.
+
+        :return:
+        """
+
+        if caching.read_from_file(config.get_fr_analyzed(), 1):
+            list_dict = caching.read_from_file(config.get_fr_analyzed(), 1)
+            self.dict_pos_scores = list_dict[0]
+            self.dict_neg_scores = list_dict[1]
+            return
+
+        for pos, list_statistic in self.dict_pos_statistic.iteritems():
+            if pos != 'ADJ':
+                continue
+
+            for i in xrange(1, 11):
+                progressbar.print_progress(i - 1, 10, 'Scoring positive progress:', 'Complete', 1, 50)
+                for key_word, times in list_statistic[i].iteritems():
+                    if key_word in constant.exceptional_set or key_word in self.dict_pos_scores or times < 5:
+                        continue
+                    print tools.calculate_relative_scores(tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
+                    self.dict_pos_scores[key_word] = tools.calculate_relative_scores(
+                        tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
+            progressbar.print_progress(10, 10, 'Scoring positive progress:', 'Complete', 1, 50)
+
+        for pos, list_statistic in self.dict_neg_statistic.iteritems():
+            if pos != 'ADJ':
+                continue
+
+            for i in xrange(1, 11):
+                progressbar.print_progress(i - 1, 10, 'Scoring negative progress:', 'Complete', 1, 50)
+                for key_word, times in list_statistic[i].iteritems():
+                    if key_word in constant.exceptional_set or key_word in self.dict_neg_scores or times < 5:
+                        continue
+
+                    self.dict_neg_scores[key_word] = tools.calculate_relative_scores(
+                        tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
+            progressbar.print_progress(10, 10, 'Scoring negative progress:', 'Complete', 1, 50)
+
+        caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_fr_analyzed(), 1)
 
 
 if __name__ == '__main__':
@@ -175,28 +220,24 @@ if __name__ == '__main__':
     #         print word.pos_
     #     print
 
+    interesting_word_list = ['pure', 'predictable', 'worthy', 'laughable']
+    wired_word_list = ['good']
+    typical_word_list = ['best', 'terrible', 'willing', 'marvelous']
+    unexpected_word_list = ['unexpected', 'intelligent']
+    confused_word_list = ['half', 'late']
+
     r_parser = ReviewParser()
-    r_parser.display_top_hit('ADJ', True, 30)
-    r_parser.display_top_hit('ADJ', False, 30)
+    # r_parser.display_top_hit('ADJ', True, 200)
+    # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
-    list_words_frequency = [
-        r_parser.get_word_frequency_rate('bad', 'ADJ'),
-        r_parser.get_word_frequency_rate('good', 'ADJ'),
-        r_parser.get_word_frequency_rate('first', 'ADJ'),
-        r_parser.get_word_frequency_rate('original', 'ADJ'),
-        r_parser.get_word_frequency_rate('great', 'ADJ')
-    ]
-    # list_words_frequency = [
-    #     r_parser.get_word_frequency_rate('stupid', 'ADJ'),
-    #     r_parser.get_word_frequency_rate('terrible', 'ADJ'),
-    #     r_parser.get_word_frequency_rate('old', 'ADJ'),
-    #     r_parser.get_word_frequency_rate('boring', 'ADJ'),
-    #     r_parser.get_word_frequency_rate('best', 'ADJ')
-    # ]
-    # list_words_frequency = [
-    #     r_parser.get_word_frequency_rate('interesting', 'ADJ'),
-    #     r_parser.get_word_frequency_rate('predictable', 'ADJ')
-    # ]
+
+    r_parser.score_all_adj_by_frequency_rates()
+
+    list_words_frequency = []
+    word_list = 'appropriate'
+    for item in word_list.split(' '):
+        list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
+
     tools.display_word_frequency_distribution(list_words_frequency, False)
     tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 

@@ -18,3 +18,8 @@ category_selector = 0
 # tags
 def get_tag_analyzed():
     return 'analyzed_' + chart_category[category_selector]
+
+
+# frequency rate
+def get_fr_analyzed():
+    return 'trained_' + chart_category[category_selector]
