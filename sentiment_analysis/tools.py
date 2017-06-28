@@ -73,8 +73,9 @@ def fit_curve(list_y_values):
         # fit_x = np.linspace(x[0], x[-1], 50)
         # fit_y = f(fit_x)
         fit_y = f(x)
+        non_negation_list = [0 if i < 0 else i for i in fit_y.tolist()]
 
         fit_list_y_values.append({'key_word': 'fit-' + item['key_word'], 'pos_type': item['pos_type'],
-                                  'list': fit_y.tolist()})
+                                  'list': non_negation_list})
 
     return fit_list_y_values
