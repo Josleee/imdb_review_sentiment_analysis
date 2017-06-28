@@ -48,6 +48,7 @@ class ReviewParser:
                 # separated_words = filter(None, re.split('[ ,.:()?"/]+', comment['content'].lower()))
                 for sentence in parsed_data.sents:
                     negation_polarity = tools.negation_cues_cal(sentence)
+
                     for word in sentence:
                         if word.lower_ in constant.exceptional_set:
                             continue
@@ -111,7 +112,7 @@ class ReviewParser:
                         index += 1
                 print
 
-    def find_sample(self, rating, word, limited=5):
+    def find_and_display_sample(self, rating, word, limited=5):
         """
         Find samples in the corpus by some conditions.
 
@@ -136,22 +137,50 @@ class ReviewParser:
                             return
                         else:
                             index += 1
+        if index == 1:
+            print 'Not found.'
+
+    def get_word_frequency_rate(self, word, pos_type):
+        """
+        Get specific word occurrence frequency in certain pos
+
+        :param word:
+        :param pos_type:
+        :return:
+        """
+
+        list_frequency_rate = []
+
+        for key, value in self.pos_dict_statistic.iteritems():
+            if key != pos_type:
+                continue
+
+            for i in xrange(1, 11):
+                print value[i][word]
+                if word in value[i]:
+                    list_frequency_rate.append(value[i][word] * 100 / float(len(value[i])))
+                else:
+                    list_frequency_rate.append(0)
+
+        return list_frequency_rate
 
 
 if __name__ == '__main__':
-    # parsed_data = nlp(unicode(
-    #     'Because it\'s the same story but you don\'t care who wins or loses. you just want the franchise to please end. Sorry Mr Bay but this is a total and utter failure.'))
+    # parsed_data = nlp(unicode('Because it\'s the same story, but you don\'t care who wins or loses. '
+    #                           'you just want, the franchise to please end. '
+    #                           'Sorry Mr Bay but this is a total and utter failure.'))
     # for span in parsed_data.sents:
-    #     print tools.negation_cues_cal(span)
+    #     print span.text
     #     for word in span:
-    #         print type(word.lower_)
     #         print word.lower_
+    #         print word.pos_
     #     print
 
     r_parser = ReviewParser()
     r_parser.display_top_hit('ADJ', True, 30)
     r_parser.display_top_hit('ADJ', False, 30)
-    r_parser.find_sample(1, 'good')
+    # r_parser.find_sample(10, 'good', 10)
+    print r_parser.get_word_frequency_rate('good', 'ADJ')
 
     # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
     # parser.parse()
