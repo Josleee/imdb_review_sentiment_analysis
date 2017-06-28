@@ -9,7 +9,7 @@ def negation_cues_cal(sentence):
     Calculate the negative polarity of sentence
 
     :param sentence:
-    :return:
+    :return: if return true, polarity does not change; if return false, polarity does change
     """
 
     polarity = True
