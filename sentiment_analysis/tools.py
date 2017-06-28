@@ -42,7 +42,7 @@ def display_word_frequency_distribution(list_y_values, all_data=True):
     for item in list_y_values:
         x = np.array(range(1, 11), np.int32)
         y = np.array(item['list'], np.float)
-        plt.plot(x, y, label=item['key_word'])
+        plt.plot(x, y, label='fit-' + item['key_word'] if item['fitted'] is True else item['key_word'])
         plt.xlabel('Rating (stars)')
         plt.ylabel('Frequency rate (%)')
 
@@ -75,7 +75,36 @@ def fit_curve(list_y_values):
         fit_y = f(x)
         non_negation_list = [0 if i < 0 else i for i in fit_y.tolist()]
 
-        fit_list_y_values.append({'key_word': 'fit-' + item['key_word'], 'pos_type': item['pos_type'],
-                                  'list': non_negation_list})
+        fit_list_y_values.append({'key_word': item['key_word'], 'pos_type': item['pos_type'],
+                                  'list': non_negation_list, 'fitted': True})
 
     return fit_list_y_values
+
+
+def calculate_relative_scores(list_y_values):
+    """
+    Calculate relative scores by y values
+
+    :param list_y_values:
+    :return:
+    """
+
+    if not list_y_values:
+        return
+
+    list_scored = []
+
+    for item in list_y_values:
+        min_value = float(min(item['list'])) if min(item['list']) > 0.05 else float(0.05)
+        max_value = max(item['list'])
+        score = (max_value / min_value) if (max_value / min_value) < 10 else 10
+
+        list_scored.append({'key_word': item['key_word'], 'pos_type': item['pos_type'],
+                            'list': [v / max_value * score for v in item['list']], 'fitted': True})
+
+    return list_scored
+
+
+def data_std(list_y_values):
+    for item in list_y_values:
+        np.std(item['list'])
