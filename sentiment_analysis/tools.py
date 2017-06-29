@@ -105,6 +105,23 @@ def calculate_relative_scores(list_y_values):
     return list_scored
 
 
+def plus_two_lists(list_a, list_b):
+    """
+    Plus values in two lists
+
+    :param list_a:
+    :param list_b:
+    :return:
+    """
+
+    list_c = []
+
+    for index, value in enumerate(list_a):
+        list_c.append(value + list_b[index])
+
+    return list_c
+
+
 def data_std(list_y_values):
     for item in list_y_values:
         np.std(item['list'])
