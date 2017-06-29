@@ -187,7 +187,8 @@ class ReviewParser:
                 for key_word, times in list_statistic[i].iteritems():
                     if key_word in constant.exceptional_set or key_word in self.dict_pos_scores or times < 5:
                         continue
-                    print tools.calculate_relative_scores(tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
+
+                    # TODO save to dict by adding not replace (consider other pos also has this word's rule)
                     self.dict_pos_scores[key_word] = tools.calculate_relative_scores(
                         tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
             progressbar.print_progress(10, 10, 'Scoring positive progress:', 'Complete', 1, 50)
@@ -202,11 +203,53 @@ class ReviewParser:
                     if key_word in constant.exceptional_set or key_word in self.dict_neg_scores or times < 5:
                         continue
 
+                    # TODO save to dict by adding not replace (consider other pos also has this word's rule)
                     self.dict_neg_scores[key_word] = tools.calculate_relative_scores(
                         tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
             progressbar.print_progress(10, 10, 'Scoring negative progress:', 'Complete', 1, 50)
 
         caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_fr_analyzed(), 1)
+
+    def analyse_given_review(self, text):
+        """
+        Analyse a given text and return a rating possibility
+
+        :return:
+        """
+
+        score = [0 for i in range(0, 10)]
+        parsed_text = nlp(text)
+
+        for sentence in parsed_text.sents:
+            negation_polarity = tools.negation_cues_cal(sentence)
+
+            for word in sentence:
+                if word.lower_ in constant.exceptional_set:
+                    continue
+
+                if word.pos_ != 'ADJ':
+                    continue
+
+                if negation_polarity:
+                    if word.lower_ not in self.dict_pos_scores:
+                        continue
+
+                    for rule in self.dict_pos_scores[word.lower_]:
+                        if rule['pos_type'] != 'ADJ':
+                            continue
+
+                        score = tools.plus_two_lists(rule['list'], score)
+                else:
+                    if word.lower_ not in self.dict_neg_scores:
+                        continue
+
+                    for rule in self.dict_neg_scores[word.lower_]:
+                        if rule['pos_type'] != 'ADJ':
+                            continue
+
+                        score = tools.plus_two_lists(rule['list'], score)
+
+        print score
 
 
 if __name__ == '__main__':
@@ -240,6 +283,9 @@ if __name__ == '__main__':
 
     tools.display_word_frequency_distribution(list_words_frequency, False)
     tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
+
+    text = open('../data/to_be_analysed/review.txt').read()
+    r_parser.analyse_given_review(unicode(text))
 
     # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
     # parser.parse()
