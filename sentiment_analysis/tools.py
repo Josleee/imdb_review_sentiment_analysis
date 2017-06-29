@@ -122,6 +122,38 @@ def plus_two_lists(list_a, list_b):
     return list_c
 
 
+def compare_result_to_rating(list_result, rating):
+    """
+    Compare the result list to rating.
+    Return whether the predicted polarity is consistent with rating and
+    the difference between user's rating and predicted rating and
+    the user's rating' position in ordered predicted possibility rating.
+
+    :param list_result:
+    :param rating:
+    :return:
+    """
+
+    if not list_result:
+        return
+
+    b_consistent = False
+    list_gap = []
+    rank = 0
+
+    for index in [i + 1 for i, j in enumerate(list_result) if j == max(list_result)]:
+        list_gap.append(abs(rating - index))
+
+        if (rating <= 5 and index <= 5) or (rating > 5 and index > 5):
+            b_consistent = True
+
+    for value in list_result:
+        if value > list_result[rating - 1]:
+            rank += 1
+
+    return b_consistent, np.mean(list_gap), rank
+
+
 def data_std(list_y_values):
     for item in list_y_values:
         np.std(item['list'])
