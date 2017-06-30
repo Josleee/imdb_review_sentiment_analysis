@@ -1,5 +1,9 @@
+import codecs
+import random
 import re
 from collections import OrderedDict
+from copy import deepcopy
+
 
 import spacy
 
@@ -214,13 +218,14 @@ class ReviewParser:
         """
         Analyse a given text and return a rating possibility
 
-        :return:
+        :return: predicted score list
         """
 
         score = [0 for i in range(0, 10)]
         parsed_text = nlp(text)
 
         for sentence in parsed_text.sents:
+            # print sentence.text
             negation_polarity = tools.negation_cues_cal(sentence)
 
             for word in sentence:
@@ -239,6 +244,7 @@ class ReviewParser:
                             continue
 
                         score = tools.plus_two_lists(rule['list'], score)
+                        print 'p_word: %s, predicted rating: %d' % (word.lower_, rule['list'].index(max(rule['list'])) + 1)
                 else:
                     if word.lower_ not in self.dict_neg_scores:
                         continue
@@ -248,8 +254,45 @@ class ReviewParser:
                             continue
 
                         score = tools.plus_two_lists(rule['list'], score)
+                        print 'n_word: %s, predicted rating: %d' % (word.lower_, rule['list'].index(max(rule['list'])) + 1)
 
-        print score
+        return score
+
+    def randomly_sentiment_analysis_testing(self, test_name=None, amount=5):
+        """
+        Randomly pick up movie reviews from corpus, analyse them and compare results to users' ratings
+
+        :param test_name:
+        :param amount:
+        :return:
+        """
+
+        list_test_data = []
+
+        for ca in config.chart_category:
+            dict_ca = caching.read_from_file(ca, 1)
+
+            for i in range(0, amount / len(config.chart_category)):
+                movie_name = random.choice(dict_ca.keys())
+                comments = dict_ca[movie_name]
+
+                if not comments:
+                    continue
+
+                comment = random.choice(comments)
+
+                if comment['rating'] == -1:
+                    continue
+
+                copy_comment = deepcopy(comment)
+                copy_comment['result'] = self.analyse_given_review(unicode(comment['content']))
+                print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
+                                                            copy_comment['result'].index(max(copy_comment['result'])) + 1)
+                print tools.compare_result_to_rating(copy_comment['result'], copy_comment['rating'])
+
+                list_test_data.append(copy_comment)
+
+        return list_test_data
 
 
 if __name__ == '__main__':
@@ -270,27 +313,38 @@ if __name__ == '__main__':
     confused_word_list = ['half', 'late']
 
     r_parser = ReviewParser()
+    r_parser.score_all_adj_by_frequency_rates()
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
-    r_parser.score_all_adj_by_frequency_rates()
+    print r_parser.randomly_sentiment_analysis_testing(amount=100)
 
     list_words_frequency = []
     word_list = 'appropriate'
     for item in word_list.split(' '):
         list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
 
-    tools.display_word_frequency_distribution(list_words_frequency, False)
-    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
+    # tools.display_word_frequency_distribution(list_words_frequency, False)
+    # tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
-    text = open('../data/to_be_analysed/review.txt').read()
-    r_parser.analyse_given_review(unicode(text))
+    # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
+    file_name = 'r9s3'
+    rating = 3
+    text = codecs.open('../data/to_be_analysed/' + file_name, encoding='utf-8', mode='r').read()
+    # list_result = r_parser.analyse_given_review(text)
+    # print list_result
+    # print tools.compare_result_to_rating(list_result, rating)
+    # list_format = [{'list': list_result, 'key_word': 'R', 'fitted': False, 'pos_type': ''}]
 
-    # parser = DiscourseParser('../data/to_be_analysed/review2.txt')
+    # tools.display_word_frequency_distribution(list_format, False)
+    # tools.display_word_frequency_distribution(tools.fit_curve(list_format), True)
+
+    # parser = DiscourseParser('../data/to_be_analysed/review7_1s.txt')
     # parser.parse()
     # for ds in parser.get_summary():
     #     separated_words = nlp(ds['content'].lower())
     #     for word in separated_words:
     #         print word.pos_, word.text
+    # r_parser.analyse_given_review('.'.join([ds['content'].lower() for ds in parser.get_summary()]))
     # parser.unload()

@@ -34,7 +34,7 @@ def get_films_from_file_by_config_settings():
 
 if __name__ == '__main__':
     t1 = time.time()
-    # scrape_films_by_config_settings()
+    scrape_films_by_config_settings()
     t2 = time.time()
 
     for data in get_films_from_file_by_config_settings().values():
