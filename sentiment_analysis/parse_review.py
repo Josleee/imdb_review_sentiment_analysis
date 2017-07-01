@@ -1,4 +1,3 @@
-import codecs
 import random
 import re
 from collections import OrderedDict
@@ -105,12 +104,16 @@ class ReviewParser:
                 ordered = OrderedDict(sorted(value[i].items(), key=lambda t: t[1], reverse=True))
                 print 'Word frequency distribution of rating %d:' % i
 
+                total_times = 0
+                for times in ordered.values():
+                    total_times += times
+
                 index = 1
                 for key2, value2 in ordered.iteritems():
                     if key2 in constant.exceptional_set:
                         continue
 
-                    print '%-15s occurs %6d times  %.2f%%' % (key2, value2, (value2 * 100 / float(len(ordered))))
+                    print '%-15s occurs %6d times  %.2f%%' % (key2, value2, (value2 * 100 / float(total_times)))
                     if index >= top_n:
                         break
                     else:
@@ -161,8 +164,12 @@ class ReviewParser:
                 continue
 
             for i in xrange(1, 11):
+                total_times = 0
+                for times in value[i].values():
+                    total_times += times
+
                 if word in value[i]:
-                    list_frequency_rate.append(value[i][word] * 100 / float(len(value[i])))
+                    list_frequency_rate.append(value[i][word] * 100 / float(total_times))
                 else:
                     list_frequency_rate.append(0)
 
@@ -292,6 +299,7 @@ class ReviewParser:
                 print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
                                                             copy_comment['result'].index(
                                                                 max(copy_comment['result'])) + 1)
+                print
                 polarity_true, rating_difference, difference_to_top_predicted = tools.compare_result_to_rating(
                     copy_comment['result'], copy_comment['rating'])
 
@@ -332,19 +340,11 @@ class ReviewParser:
                 list_count_different_category_number[comment['rating'] - 1] += 1
 
         list_format = [{'list': list_count_different_category_number, 'key_word': '', 'fitted': False, 'pos_type': ''}]
+        print 'Reviews count from rating 1-10: %s' % ', '.join(str(v) for v in list_count_different_category_number)
         tools.display_word_frequency_distribution(list_format, y_label='Occurrence times')
 
-if __name__ == '__main__':
-    # parsed_data = nlp(unicode('Because it\'s the same story, but you don\'t care who wins or loses. '
-    #                           'you just want, the franchise to please end. '
-    #                           'Sorry Mr Bay but this is a total and utter failure.'))
-    # for span in parsed_data.sents:
-    #     print span.text
-    #     for word in span:
-    #         print word.lower_
-    #         print word.pos_
-    #     print
 
+if __name__ == '__main__':
     interesting_word_list = ['pure', 'predictable', 'worthy', 'laughable']
     wired_word_list = ['good']
     typical_word_list = ['best', 'terrible', 'willing', 'marvelous']
@@ -352,28 +352,28 @@ if __name__ == '__main__':
     confused_word_list = ['half', 'late']
 
     r_parser = ReviewParser()
-    r_parser.score_all_adj_by_frequency_rates()
 
-    r_parser.review_corpus_distribution_analysis(3)
+    # r_parser.review_corpus_distribution_analysis()
+    r_parser.score_all_adj_by_frequency_rates()
 
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
-    r_parser.randomly_sentiment_analysis_testing(amount=1000)
+    # r_parser.randomly_sentiment_analysis_testing(amount=100)
 
     list_words_frequency = []
-    word_list = 'appropriate'
+    word_list = 'good'
     for item in word_list.split(' '):
         list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
 
-    # tools.display_word_frequency_distribution(list_words_frequency, False)
-    # tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
+    tools.display_word_frequency_distribution(list_words_frequency, False)
+    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
     # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
     file_name = 'r9s3'
     rating = 3
-    text = codecs.open('../data/to_be_analysed/' + file_name, encoding='utf-8', mode='r').read()
+    # text = codecs.open('../data/to_be_analysed/' + file_name, encoding='utf-8', mode='r').read()
     # list_result = r_parser.analyse_given_review(text)
     # print list_result
     # print tools.compare_result_to_rating(list_result, rating)
