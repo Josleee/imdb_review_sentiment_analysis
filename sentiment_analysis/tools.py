@@ -45,7 +45,7 @@ def display_word_frequency_distribution(list_y_values, all_data=True,
     for item in list_y_values:
         x = np.array(range(1, 11), np.int32)
         y = np.array(item['list'], np.float)
-        plt.plot(x, y, label='fit-' + item['key_word'] if item['fitted'] is True else item['key_word'])
+        plt.plot(x, y, label='fitted-' + item['key_word'] if item['fitted'] is True else item['key_word'])
         plt.xlabel(x_label)
         plt.ylabel(y_label)
 
