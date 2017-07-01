@@ -26,10 +26,13 @@ def negation_cues_cal(sentence):
     return polarity
 
 
-def display_word_frequency_distribution(list_y_values, all_data=True):
+def display_word_frequency_distribution(list_y_values, all_data=True,
+                                        x_label='Rating (stars)', y_label='Frequency rate (%)'):
     """
     Plot word frequency rate distribution figure
 
+    :param x_label:
+    :param y_label:
     :param list_y_values:
     :param all_data: if not pass this variable, the instantly plot the figure; otherwise or False,
             wait for next calling with the variable set to be True or default
@@ -43,8 +46,8 @@ def display_word_frequency_distribution(list_y_values, all_data=True):
         x = np.array(range(1, 11), np.int32)
         y = np.array(item['list'], np.float)
         plt.plot(x, y, label='fit-' + item['key_word'] if item['fitted'] is True else item['key_word'])
-        plt.xlabel('Rating (stars)')
-        plt.ylabel('Frequency rate (%)')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
 
     if all_data:
         plt.legend()

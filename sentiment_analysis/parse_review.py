@@ -4,7 +4,6 @@ import re
 from collections import OrderedDict
 from copy import deepcopy
 
-
 import spacy
 
 from network_tools import config
@@ -244,7 +243,8 @@ class ReviewParser:
                             continue
 
                         score = tools.plus_two_lists(rule['list'], score)
-                        print 'p_word: %s, predicted rating: %d' % (word.lower_, rule['list'].index(max(rule['list'])) + 1)
+                        print 'p_word: %s, predicted rating: %d' % (
+                            word.lower_, rule['list'].index(max(rule['list'])) + 1)
                 else:
                     if word.lower_ not in self.dict_neg_scores:
                         continue
@@ -254,7 +254,8 @@ class ReviewParser:
                             continue
 
                         score = tools.plus_two_lists(rule['list'], score)
-                        print 'n_word: %s, predicted rating: %d' % (word.lower_, rule['list'].index(max(rule['list'])) + 1)
+                        print 'n_word: %s, predicted rating: %d' % (
+                            word.lower_, rule['list'].index(max(rule['list'])) + 1)
 
         return score
 
@@ -268,6 +269,8 @@ class ReviewParser:
         """
 
         list_test_data = []
+        polarity_true_count = 0
+        rating_difference_smaller_than_three_count = 0
 
         for ca in config.chart_category:
             dict_ca = caching.read_from_file(ca, 1)
@@ -287,13 +290,49 @@ class ReviewParser:
                 copy_comment = deepcopy(comment)
                 copy_comment['result'] = self.analyse_given_review(unicode(comment['content']))
                 print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
-                                                            copy_comment['result'].index(max(copy_comment['result'])) + 1)
-                print tools.compare_result_to_rating(copy_comment['result'], copy_comment['rating'])
+                                                            copy_comment['result'].index(
+                                                                max(copy_comment['result'])) + 1)
+                polarity_true, rating_difference, difference_to_top_predicted = tools.compare_result_to_rating(
+                    copy_comment['result'], copy_comment['rating'])
+
+                if polarity_true:
+                    polarity_true_count += 1
+
+                if rating_difference <= 3:
+                    rating_difference_smaller_than_three_count += 1
 
                 list_test_data.append(copy_comment)
 
+        print 'Polarity accuracy: %d%%, rating difference < 3 accuracy: %d%%' % (
+            100 * polarity_true_count / float(len(list_test_data)),
+            100 * rating_difference_smaller_than_three_count / float(len(list_test_data)))
+
         return list_test_data
 
+    @staticmethod
+    def review_corpus_distribution_analysis(category_selector=None):
+        """
+        Analyse different rating reviews distribution in the corpus and
+        adj words count in different rating categories.
+
+        :return:
+        """
+
+        if not category_selector:
+            dict_reviews = caching.read_from_file(config.chart_category[config.category_selector], 1)
+        else:
+            dict_reviews = caching.read_from_file(config.chart_category[category_selector], 1)
+
+        list_count_different_category_number = [0 for i in range(0, 10)]
+
+        for key, value in dict_reviews.iteritems():
+            for comment in value:
+                if comment['rating'] == -1:
+                    continue
+                list_count_different_category_number[comment['rating'] - 1] += 1
+
+        list_format = [{'list': list_count_different_category_number, 'key_word': '', 'fitted': False, 'pos_type': ''}]
+        tools.display_word_frequency_distribution(list_format, y_label='Occurrence times')
 
 if __name__ == '__main__':
     # parsed_data = nlp(unicode('Because it\'s the same story, but you don\'t care who wins or loses. '
@@ -314,11 +353,14 @@ if __name__ == '__main__':
 
     r_parser = ReviewParser()
     r_parser.score_all_adj_by_frequency_rates()
+
+    r_parser.review_corpus_distribution_analysis(3)
+
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
-    print r_parser.randomly_sentiment_analysis_testing(amount=100)
+    r_parser.randomly_sentiment_analysis_testing(amount=1000)
 
     list_words_frequency = []
     word_list = 'appropriate'
