@@ -102,6 +102,9 @@ def calculate_relative_scores(list_y_values):
         max_value = max(item['list'])
         score = (max_value / min_value) if (max_value / min_value) < 10 else 10
 
+        if max_value == 0:
+            continue
+
         list_scored.append({'key_word': item['key_word'], 'pos_type': item['pos_type'],
                             'list': [v / max_value * score for v in item['list']], 'fitted': True})
 
