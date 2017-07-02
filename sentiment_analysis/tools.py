@@ -163,3 +163,54 @@ def compare_result_to_rating(list_result, rating):
 def data_std(list_y_values):
     for item in list_y_values:
         np.std(item['list'])
+
+
+def equally_distribute(list_original, target_value, assigned_list=None, unassigned_value=None, list_index=None):
+    """
+    Distribute value fairly aiming at target value
+
+    :param list_original:
+    :param target_value:
+    :param assigned_list:
+    :param unassigned_value:
+    :param list_index:
+    :return:
+    """
+
+    if not assigned_list:
+        unassigned_value = target_value * len(list_original)
+
+    if not list_index:
+        list_index = range(0, len(list_original))
+
+    if not assigned_list:
+        assigned_list = [0 for i in range(0, len(list_original))]
+
+    if unassigned_value == 0:
+        return assigned_list
+
+    new_list_index = []
+    target_value = unassigned_value / len(list_index)
+
+    if target_value == 0 and unassigned_value != 0:
+        target_value = 1
+        for i in list_index:
+            unassigned_value -= target_value
+            assigned_list[i] += target_value
+
+            if unassigned_value == 0:
+                return assigned_list
+
+    for i in list_index:
+        if list_original[i] - assigned_list[i] <= target_value:
+            unassigned_value -= list_original[i] - assigned_list[i]
+            assigned_list[i] = list_original[i]
+        else:
+            unassigned_value -= target_value
+            assigned_list[i] += target_value
+            new_list_index.append(i)
+
+    # print assigned_list
+    # print unassigned_value
+    # print new_list_index
+    return equally_distribute(list_original, target_value, assigned_list, unassigned_value, new_list_index)
