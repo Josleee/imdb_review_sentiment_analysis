@@ -175,15 +175,22 @@ class ReviewParser:
 
         return {'key_word': word, 'pos_type': pos_type, 'list': list_frequency_rate, 'fitted': False}
 
-    def score_all_adj_by_frequency_rates(self, all=None):
+    def score_all_adj_by_frequency_rates(self, combined=None):
         """
         Analyse word frequency and generate two adj score lists for sentiment prediction.
 
-        :param all:
+        :param combined:
         :return:
         """
 
-        if caching.read_from_file(config.get_fr_trained(), 1):
+        if combined:
+            if caching.read_from_file(config.get_special_trained(), 1):
+                list_dict = caching.read_from_file(config.get_special_trained(), 1)
+                self.dict_pos_scores = list_dict[0]
+                self.dict_neg_scores = list_dict[1]
+                return
+
+        elif caching.read_from_file(config.get_fr_trained(), 1):
             list_dict = caching.read_from_file(config.get_fr_trained(), 1)
             self.dict_pos_scores = list_dict[0]
             self.dict_neg_scores = list_dict[1]
@@ -219,7 +226,10 @@ class ReviewParser:
                         tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
             progressbar.print_progress(10, 10, 'Scoring negative progress:', 'Complete', 1, 50)
 
-        caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_fr_trained(), 1)
+        if combined:
+            caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_special_trained(), 1)
+        else:
+            caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_fr_trained(), 1)
 
     def analyse_given_review(self, text):
         """
@@ -475,20 +485,21 @@ if __name__ == '__main__':
     # r_parser.review_corpus_distribution_analysis(category_selector=0)
     # r_parser.score_all_adj_by_frequency_rates()
     r_parser.train_by_using_the_same_amount_of_rating_reviews()
+    r_parser.score_all_adj_by_frequency_rates(combined=True)
 
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
-    # r_parser.randomly_sentiment_analysis_testing(amount=100)
+    r_parser.randomly_sentiment_analysis_testing(amount=100)
 
     list_words_frequency = []
     word_list = 'good'
     for item in word_list.split(' '):
         list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
 
-    tools.display_word_frequency_distribution(list_words_frequency, False)
-    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
+    # tools.display_word_frequency_distribution(list_words_frequency, False)
+    # tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
     # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
     file_name = 'r9s3'
