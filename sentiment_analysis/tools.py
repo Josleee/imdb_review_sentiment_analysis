@@ -165,7 +165,7 @@ def data_std(list_y_values):
         np.std(item['list'])
 
 
-def equally_distribute(list_original, target_value, assigned_list=None, unassigned_value=None, list_index=None):
+def equally_distribute(list_original, target_value=None, assigned_list=None, unassigned_value=-1, list_index=None):
     """
     Distribute value fairly aiming at target value
 
@@ -177,7 +177,7 @@ def equally_distribute(list_original, target_value, assigned_list=None, unassign
     :return:
     """
 
-    if not assigned_list:
+    if unassigned_value == -1:
         unassigned_value = target_value * len(list_original)
 
     if not list_index:
