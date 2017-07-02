@@ -277,45 +277,33 @@ class ReviewParser:
 
         return score
 
-    def randomly_sentiment_analysis_testing(self, test_name=None, amount=5):
+    def randomly_sentiment_analysis_testing(self, amount=5, test_name=None):
         """
         Randomly pick up movie reviews from corpus, analyse them and compare results to users' ratings
 
-        :param test_name:
         :param amount:
+        :param test_name:
         :return:
         """
 
-        list_test_data = []
         polarity_true_count = 0
         rating_difference_smaller_or_equal_than_three_count = 0
         rating_difference_smaller_or_equal_than_two_count = 0
         rating_difference_smaller_or_equal_than_one_count = 0
         rating_exactly_same = 0
+        list_test_data = []
 
-        for ca in config.chart_category:
-            dict_ca = caching.read_from_file(ca, 1)
+        if test_name and caching.read_from_file(test_name, 1):
+            list_test_source = caching.read_from_file(test_name, 1)
 
-            for i in range(0, amount / len(config.chart_category)):
-                movie_name = random.choice(dict_ca.keys())
-                comments = dict_ca[movie_name]
-
-                if not comments:
-                    continue
-
-                comment = random.choice(comments)
-
-                if comment['rating'] == -1:
-                    continue
-
-                copy_comment = deepcopy(comment)
-                copy_comment['result'] = self.analyse_given_review(unicode(comment['content']))
-                print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
-                                                            copy_comment['result'].index(
-                                                                max(copy_comment['result'])) + 1)
+            for comment in list_test_source:
+                comment['result'] = self.analyse_given_review(unicode(comment['content']))
+                print 'Rating: %d, predicted rating: %d' % (comment['rating'],
+                                                            comment['result'].index(max(comment['result'])) + 1)
                 print
+
                 polarity_true, rating_difference, difference_to_top_predicted = tools.compare_result_to_rating(
-                    copy_comment['result'], copy_comment['rating'])
+                    comment['result'], comment['rating'])
 
                 if polarity_true:
                     polarity_true_count += 1
@@ -332,7 +320,50 @@ class ReviewParser:
                 if rating_difference <= 0:
                     rating_exactly_same += 1
 
-                list_test_data.append(copy_comment)
+                list_test_data.append(comment)
+
+        else:
+            for ca in config.chart_category:
+                dict_ca = caching.read_from_file(ca, 1)
+
+                for i in range(0, amount / len(config.chart_category)):
+                    movie_name = random.choice(dict_ca.keys())
+                    comments = dict_ca[movie_name]
+
+                    if not comments:
+                        continue
+
+                    comment = random.choice(comments)
+
+                    if comment['rating'] == -1:
+                        continue
+
+                    copy_comment = deepcopy(comment)
+                    copy_comment['result'] = self.analyse_given_review(unicode(comment['content']))
+                    print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
+                                                                copy_comment['result'].index(
+                                                                    max(copy_comment['result'])) + 1)
+                    print
+
+                    polarity_true, rating_difference, difference_to_top_predicted = tools.compare_result_to_rating(
+                        copy_comment['result'], copy_comment['rating'])
+
+                    if polarity_true:
+                        polarity_true_count += 1
+
+                    if rating_difference <= 3:
+                        rating_difference_smaller_or_equal_than_three_count += 1
+
+                    if rating_difference <= 2:
+                        rating_difference_smaller_or_equal_than_two_count += 1
+
+                    if rating_difference <= 1:
+                        rating_difference_smaller_or_equal_than_one_count += 1
+
+                    if rating_difference <= 0:
+                        rating_exactly_same += 1
+
+                    list_test_data.append(copy_comment)
 
         print 'Polarity accuracy: %d%%, rating difference <= 3 accuracy: %d%%, rating difference <= 2 accuracy: %d%%' \
               % (
@@ -344,6 +375,8 @@ class ReviewParser:
                   100 * rating_difference_smaller_or_equal_than_one_count / float(len(list_test_data)),
                   100 * rating_exactly_same / float(len(list_test_data)))
 
+        if test_name:
+            caching.dump_to_file(list_test_data, test_name, 1)
         return list_test_data
 
     def train_by_using_the_same_amount_of_rating_reviews(self):
@@ -509,7 +542,7 @@ if __name__ == '__main__':
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
-    r_parser.randomly_sentiment_analysis_testing(amount=100)
+    r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test')
 
     list_words_frequency = []
     word_list = 'good'
