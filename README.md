@@ -1,7 +1,3 @@
-# IDMB review sentiment analysis
+# Sentiment Analysis on Movie Reviews 
 
-This project is made for movie reviews sentiment analysis.
-
-## Modules
-
-Scrapper module + analyser module.
+This project aims at developing program able to scrap data from IMDB, training data automatically and analyse sentiment of given movie reviews.
