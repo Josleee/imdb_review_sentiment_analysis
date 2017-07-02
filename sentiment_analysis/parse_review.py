@@ -25,8 +25,8 @@ class ReviewParser:
         self.dict_pos_statistic = {}
         self.dict_neg_statistic = {}
 
-        if caching.read_from_file(config.get_tag_analyzed(), 1):
-            list_dict = caching.read_from_file(config.get_tag_analyzed(), 1)
+        if caching.read_from_file(config.get_tag_analysed(), 1):
+            list_dict = caching.read_from_file(config.get_tag_analysed(), 1)
             self.dict_pos_statistic = list_dict[0]
             self.dict_neg_statistic = list_dict[1]
             return
@@ -75,8 +75,8 @@ class ReviewParser:
                                 self.dict_neg_statistic[word.pos_][comment['rating']][word.lower_] += 1
 
             index += 1
-            progressbar.print_progress(index, len(self.dict_reviews), 'Progress:', 'Complete', 1, 50)
-        caching.dump_to_file([self.dict_pos_statistic, self.dict_neg_statistic], config.get_tag_analyzed(), 1)
+            progressbar.print_progress(index, len(self.dict_reviews), 'Analysing progress:', 'Complete', 1, 50)
+        caching.dump_to_file([self.dict_pos_statistic, self.dict_neg_statistic], config.get_tag_analysed(), 1)
 
     def display_top_hit(self, pos_type, dict_type, top_n=10):
         """
@@ -175,15 +175,16 @@ class ReviewParser:
 
         return {'key_word': word, 'pos_type': pos_type, 'list': list_frequency_rate, 'fitted': False}
 
-    def score_all_adj_by_frequency_rates(self):
+    def score_all_adj_by_frequency_rates(self, all=None):
         """
         Analyse word frequency and generate two adj score lists for sentiment prediction.
 
+        :param all:
         :return:
         """
 
-        if caching.read_from_file(config.get_fr_analyzed(), 1):
-            list_dict = caching.read_from_file(config.get_fr_analyzed(), 1)
+        if caching.read_from_file(config.get_fr_trained(), 1):
+            list_dict = caching.read_from_file(config.get_fr_trained(), 1)
             self.dict_pos_scores = list_dict[0]
             self.dict_neg_scores = list_dict[1]
             return
@@ -218,7 +219,7 @@ class ReviewParser:
                         tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
             progressbar.print_progress(10, 10, 'Scoring negative progress:', 'Complete', 1, 50)
 
-        caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_fr_analyzed(), 1)
+        caching.dump_to_file([self.dict_pos_scores, self.dict_neg_scores], config.get_fr_trained(), 1)
 
     def analyse_given_review(self, text):
         """
@@ -317,19 +318,133 @@ class ReviewParser:
 
         return list_test_data
 
+    def train_by_using_the_same_amount_of_rating_reviews(self):
+        """
+        Train the corpus by using movie reviews in same amount in different rating categories
+
+        """
+
+        self.dict_pos_statistic = {}
+        self.dict_neg_statistic = {}
+
+        if caching.read_from_file(config.get_special_analysed(), 1):
+            list_dict = caching.read_from_file(config.get_special_analysed(), 1)
+            self.dict_pos_statistic = list_dict[0]
+            self.dict_neg_statistic = list_dict[1]
+            return
+
+        list_sum = [0 for i in range(0, 10)]
+        dict_distribution = {}
+
+        for category_name in config.get_useful_charts():
+            dict_reviews = caching.read_from_file(category_name, 1)
+            dict_distribution = dict(dict_distribution.items() + dict_reviews.items())
+
+            # list_distribution = self.review_corpus_distribution_analysis(category=category_name, show_result=False)
+            # list_sum = tools.plus_two_lists(list_sum, list_distribution)
+            # dict_distribution[category_name] = list_distribution
+
+        list_movie_info = [dict() for i in range(0, 10)]
+        for movie_name, value in dict_distribution.iteritems():
+            list_ratings = [0 for i in range(0, 10)]
+
+            for comment in value:
+                if comment['rating'] == -1:
+                    continue
+
+                list_ratings[comment['rating'] - 1] += 1
+
+            if sum(list_ratings) == 0:
+                continue
+
+            list_weighted_ratings = [list_ratings[i] * (i + 1) for i in range(0, 10)]
+            list_sum[sum(list_weighted_ratings) / sum(list_ratings) - 1] += sum(list_ratings)
+            # print 'movie: %s, review count: %d, average rating: %.2f' % \
+            #       (movie_name, sum(list_ratings), sum(list_weighted_ratings) / float(sum(list_ratings)))
+            list_movie_info[sum(list_weighted_ratings) / sum(list_ratings) - 1][movie_name] = sum(list_ratings)
+
+        # list_format = [
+        #     {'list': list_sum, 'key_word': '', 'fitted': False, 'pos_type': ''}]
+        # print 'Reviews count from rating 1-10: %s' % ', '.join(str(v) for v in list_sum)
+        # tools.display_word_frequency_distribution(list_format, y_label='Review pieces')
+
+        # Separate the data set to three parts, whose rating is from 1-4, 4-7 and 7-10 respectively
+        # print '%s %s %s' % ((list_sum[0:3]), (list_sum[3:6]), (list_sum[6:9]))
+        each_part_reviews_amount = min(sum(list_sum[0:3]), sum(list_sum[3:6]), sum(list_sum[6:9]))
+
+        list_review_distributed = []
+        for i in range(0, 3):
+            list_review_distributed.extend(tools.equally_distribute(list_sum[i * 3:i * 3 + 3],
+                                                                    unassigned_value=each_part_reviews_amount))
+        # print list_review_distributed
+
+        for r, a in enumerate(list_review_distributed):
+            list_review_amount = tools.equally_distribute(list_movie_info[r].values(), unassigned_value=a)
+            # print list_review_amount
+
+            progressbar_index = 0
+            progressbar.print_progress(progressbar_index, len(list_movie_info[r]),
+                                       'Analysing progress:', 'Rating ' + str(r + 1), 1, 50)
+
+            for index, movie_name in enumerate(list_movie_info[r].keys()):
+                # print list_review_amount[index]
+
+                comment_index = 0
+                for comment in dict_distribution[movie_name]:
+                    parsed_data = nlp(comment['content'])
+
+                    for sentence in parsed_data.sents:
+                        negation_polarity = tools.negation_cues_cal(sentence)
+
+                        for word in sentence:
+                            # if word.lower_ in constant.exceptional_set:
+                            #     continue
+
+                            # Add a dictionary in the two POS list
+                            if word.pos_ not in self.dict_pos_statistic:
+                                self.dict_pos_statistic[word.pos_] = [dict() for i in range(0, 11)]
+                            if word.pos_ not in self.dict_neg_statistic:
+                                self.dict_neg_statistic[word.pos_] = [dict() for i in range(0, 11)]
+
+                            if negation_polarity:
+                                if word.lower_ not in self.dict_pos_statistic[word.pos_][comment['rating']]:
+                                    self.dict_pos_statistic[word.pos_][comment['rating']][word.lower_] = 1
+                                else:
+                                    self.dict_pos_statistic[word.pos_][comment['rating']][word.lower_] += 1
+                            else:
+                                if word.lower_ not in self.dict_neg_statistic[word.pos_][comment['rating']]:
+                                    self.dict_neg_statistic[word.pos_][comment['rating']][word.lower_] = 1
+                                else:
+                                    self.dict_neg_statistic[word.pos_][comment['rating']][word.lower_] += 1
+
+                    comment_index += 1
+                    if list_review_amount[index] <= comment_index:
+                        break
+
+                progressbar_index += 1
+                progressbar.print_progress(progressbar_index, len(list_movie_info[r]),
+                                           'Analysing progress:', 'Rating ' + str(r + 1), 1, 50)
+
+        caching.dump_to_file([self.dict_pos_statistic, self.dict_neg_statistic], config.get_special_analysed(), 1)
+
     @staticmethod
-    def review_corpus_distribution_analysis(category_selector=None):
+    def review_corpus_distribution_analysis(category_selector=-1, category=None, show_result=True):
         """
         Analyse different rating reviews distribution in the corpus and
         adj words count in different rating categories.
 
+        :param category_selector:
+        :param category:
+        :param show_result:
         :return:
         """
 
-        if not category_selector:
-            dict_reviews = caching.read_from_file(config.chart_category[config.category_selector], 1)
-        else:
+        if category_selector != -1:
             dict_reviews = caching.read_from_file(config.chart_category[category_selector], 1)
+        elif category:
+            dict_reviews = caching.read_from_file(category, 1)
+        else:
+            dict_reviews = caching.read_from_file(config.chart_category[config.category_selector], 1)
 
         list_count_different_category_number = [0 for i in range(0, 10)]
 
@@ -339,9 +454,13 @@ class ReviewParser:
                     continue
                 list_count_different_category_number[comment['rating'] - 1] += 1
 
-        list_format = [{'list': list_count_different_category_number, 'key_word': '', 'fitted': False, 'pos_type': ''}]
-        print 'Reviews count from rating 1-10: %s' % ', '.join(str(v) for v in list_count_different_category_number)
-        tools.display_word_frequency_distribution(list_format, y_label='Occurrence times')
+        if show_result:
+            list_format = [
+                {'list': list_count_different_category_number, 'key_word': '', 'fitted': False, 'pos_type': ''}]
+            print 'Reviews count from rating 1-10: %s' % ', '.join(str(v) for v in list_count_different_category_number)
+            tools.display_word_frequency_distribution(list_format, y_label='Occurrence times')
+
+        return list_count_different_category_number
 
 
 if __name__ == '__main__':
@@ -353,8 +472,9 @@ if __name__ == '__main__':
 
     r_parser = ReviewParser()
 
-    # r_parser.review_corpus_distribution_analysis()
-    r_parser.score_all_adj_by_frequency_rates()
+    # r_parser.review_corpus_distribution_analysis(category_selector=0)
+    # r_parser.score_all_adj_by_frequency_rates()
+    r_parser.train_by_using_the_same_amount_of_rating_reviews()
 
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)

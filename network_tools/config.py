@@ -10,16 +10,29 @@ fail_wait_time = 5
 try_times = 5
 
 # Box Office, Most Popular Movies, Top Rated Movies, Top Rated English Movies, Lowest Rated Movies
-chart_category = ['boxoffice', 'moviemeter', 'top', 'top-english-movies', 'bottom']
+chart_category = ['boxoffice', 'top', 'top-english-movies', 'moviemeter', 'bottom']
 # 0 ~ 4 corresponding to the specific category above respectively
-category_selector = 0
+category_selector = 2
 
 
-# tags
-def get_tag_analyzed():
+# get analysed filename
+def get_tag_analysed():
     return 'analyzed_' + chart_category[category_selector]
 
 
-# frequency rate
-def get_fr_analyzed():
+# get category frequency rate trained filename
+def get_fr_trained():
     return 'trained_' + chart_category[category_selector]
+
+
+# get useful categories filename
+def get_useful_charts():
+    return [v for v in chart_category[:]]
+
+
+def get_special_analysed():
+    return 'analyzed_all'
+
+
+def get_special_trained():
+    return 'trained_all'
