@@ -288,7 +288,10 @@ class ReviewParser:
 
         list_test_data = []
         polarity_true_count = 0
-        rating_difference_smaller_than_three_count = 0
+        rating_difference_smaller_or_equal_than_three_count = 0
+        rating_difference_smaller_or_equal_than_two_count = 0
+        rating_difference_smaller_or_equal_than_one_count = 0
+        rating_exactly_same = 0
 
         for ca in config.chart_category:
             dict_ca = caching.read_from_file(ca, 1)
@@ -318,13 +321,28 @@ class ReviewParser:
                     polarity_true_count += 1
 
                 if rating_difference <= 3:
-                    rating_difference_smaller_than_three_count += 1
+                    rating_difference_smaller_or_equal_than_three_count += 1
+
+                if rating_difference <= 2:
+                    rating_difference_smaller_or_equal_than_two_count += 1
+
+                if rating_difference <= 1:
+                    rating_difference_smaller_or_equal_than_one_count += 1
+
+                if rating_difference <= 0:
+                    rating_exactly_same += 1
 
                 list_test_data.append(copy_comment)
 
-        print 'Polarity accuracy: %d%%, rating difference < 3 accuracy: %d%%' % (
-            100 * polarity_true_count / float(len(list_test_data)),
-            100 * rating_difference_smaller_than_three_count / float(len(list_test_data)))
+        print 'Polarity accuracy: %d%%, rating difference <= 3 accuracy: %d%%, rating difference <= 2 accuracy: %d%%' \
+              % (
+                  100 * polarity_true_count / float(len(list_test_data)),
+                  100 * rating_difference_smaller_or_equal_than_three_count / float(len(list_test_data)),
+                  100 * rating_difference_smaller_or_equal_than_two_count / float(len(list_test_data)))
+        print 'Rating difference <= 1 accuracy: %d%%, rating difference = 0 accuracy: %d%%' \
+              % (
+                  100 * rating_difference_smaller_or_equal_than_one_count / float(len(list_test_data)),
+                  100 * rating_exactly_same / float(len(list_test_data)))
 
         return list_test_data
 
