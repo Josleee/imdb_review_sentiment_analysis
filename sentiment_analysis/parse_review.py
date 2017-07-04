@@ -7,6 +7,7 @@ import spacy
 
 from network_tools import config
 from sentiment_analysis import constant, tools
+from sentiment_analysis.parse_discourse import DiscourseParser
 from utilities import caching, progressbar
 
 nlp = spacy.load('en')
@@ -148,18 +149,24 @@ class ReviewParser:
         if index == 1:
             print 'Not found.'
 
-    def get_word_frequency_rate(self, word, pos_type):
+    def get_word_frequency_rate(self, word, pos_type, negation=False):
         """
         Get specific word occurrence frequency in certain pos
 
+        :param negation:
         :param word:
         :param pos_type:
         :return:
         """
 
+        if negation:
+            dict_pos_statistic = self.dict_neg_statistic
+        else:
+            dict_pos_statistic = self.dict_pos_statistic
+
         list_frequency_rate = []
 
-        for key, value in self.dict_pos_statistic.iteritems():
+        for key, value in dict_pos_statistic.iteritems():
             if key != pos_type:
                 continue
 
@@ -323,10 +330,10 @@ class ReviewParser:
                 list_test_data.append(comment)
 
         else:
-            for ca in config.chart_category:
+            for ca in config.chart_category[2:]:
                 dict_ca = caching.read_from_file(ca, 1)
 
-                for i in range(0, amount / len(config.chart_category)):
+                for i in range(0, amount / len(config.chart_category[2:])):
                     movie_name = random.choice(dict_ca.keys())
                     comments = dict_ca[movie_name]
 
@@ -534,23 +541,38 @@ if __name__ == '__main__':
     r_parser = ReviewParser()
 
     # r_parser.review_corpus_distribution_analysis(category_selector=0)
-    # r_parser.score_all_adj_by_frequency_rates()
-    r_parser.train_by_using_the_same_amount_of_rating_reviews()
-    r_parser.score_all_adj_by_frequency_rates(combined=True)
+    r_parser.score_all_adj_by_frequency_rates()
+    # r_parser.train_by_using_the_same_amount_of_rating_reviews()
+    # r_parser.score_all_adj_by_frequency_rates(combined=True)
 
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
-    r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test')
+    # r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test2')
 
     list_words_frequency = []
-    word_list = 'good'
+    word_list = 'pure excellent worthy'
     for item in word_list.split(' '):
         list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
+        p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
+        n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
 
-    # tools.display_word_frequency_distribution(list_words_frequency, False)
-    # tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
+        pi = [p1, n1]
+        for p in pi:
+            print '%s &' % item,
+            index = 0
+            for v in p['list']:
+                index += 1
+
+                print '%.2f' % (float(v) * 10),
+                if index % 10 != 0:
+                    print '&',
+                else:
+                    print '\\\\'
+
+    tools.display_word_frequency_distribution(list_words_frequency, False)
+    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
     # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
     file_name = 'r9s3'
@@ -564,11 +586,7 @@ if __name__ == '__main__':
     # tools.display_word_frequency_distribution(list_format, False)
     # tools.display_word_frequency_distribution(tools.fit_curve(list_format), True)
 
-    # parser = DiscourseParser('../data/to_be_analysed/review7_1s.txt')
-    # parser.parse()
-    # for ds in parser.get_summary():
-    #     separated_words = nlp(ds['content'].lower())
-    #     for word in separated_words:
-    #         print word.pos_, word.text
-    # r_parser.analyse_given_review('.'.join([ds['content'].lower() for ds in parser.get_summary()]))
-    # parser.unload()
+    parser = DiscourseParser('../data/to_be_analysed/review7_1s.txt')
+    parser.parse()
+    r_parser.analyse_given_review('.'.join([ds['content'].lower() for ds in parser.get_summary()]))
+    parser.unload()
