@@ -13,7 +13,7 @@ from treebuilder.build_tree_greedy import GreedyTreeBuilder
 
 
 class DiscourseParser:
-    def __init__(self, file_name, feature_sets='FengHirst',
+    def __init__(self, file_name=None, content=None, feature_sets='FengHirst',
                  verbose=False, seg=False, output=True, SGML=True, edus=False):
         """
         This is Hilda's segmentation module
@@ -32,6 +32,7 @@ class DiscourseParser:
         self.SGML = SGML
         self.edus = edus
         self.file_name = file_name
+        self.content = content
 
         self.segmenter = None
         self.dependencies = True
@@ -79,24 +80,35 @@ class DiscourseParser:
         if self.tree_builder is not None:
             self.tree_builder.unload()
 
-    def parse(self, file_name=None):
+    def parse(self, file_name=None, content=None):
         if not file_name:
             file_name = self.file_name
         else:
             self.file_name = file_name
 
-        if not os.path.exists(file_name):
-            print '%s does not exist.' % file_name
-            return
+        if not content:
+            if self.content:
+                content = self.content
+        else:
+            self.content = content
 
-        if os.path.exists(file_name + '.smr') and os.path.exists(file_name + '.dis'):
-            print 'Successfully read caching from files.'
-            return
+        if not content:
+            if not os.path.exists(file_name):
+                print '%s does not exist.' % file_name
+                return
+
+            if os.path.exists(file_name + '.smr') and os.path.exists(file_name + '.dis'):
+                print 'Successfully read caching from files.'
+                return
 
         print 'Parsing %s' % file_name
 
         try:
-            text = open(file_name).read()
+            if not content:
+                text = open(file_name).read()
+            else:
+                text = unicode(content)
+
             text = re.sub('\.', '.<s>', text)
             text = re.sub('<s> *<p>', '<p>', text)
 
@@ -138,13 +150,14 @@ class DiscourseParser:
                     self.smg_tree = utils.utils.print_SGML_tree(pt)
                     self.summary = utils.utils.print_summary(pt)
 
-                    caching_summary_file = file_name + '.%s' % 'smr'
-                    with open(caching_summary_file, 'w') as f:
-                        json.dump(self.summary, f)
+                    if file_name:
+                        caching_summary_file = file_name + '.%s' % 'smr'
+                        with open(caching_summary_file, 'w') as f:
+                            json.dump(self.summary, f)
 
-                    caching_tree_file = file_name + '.%s' % 'dis'
-                    with open(caching_tree_file, 'w') as f:
-                        f.write(self.get_smg_tree())
+                        caching_tree_file = file_name + '.%s' % 'dis'
+                        with open(caching_tree_file, 'w') as f:
+                            f.write(self.get_smg_tree())
 
         except Exception, e:
             print traceback.print_exc()
