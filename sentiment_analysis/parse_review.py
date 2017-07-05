@@ -246,7 +246,7 @@ class ReviewParser:
 
                     # TODO save to dict by adding not replace (consider other pos also has this word's rule)
                     self.dict_neg_scores[key_word] = tools.calculate_relative_scores(
-                        tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ')]))
+                        tools.fit_curve([self.get_word_frequency_rate(key_word, 'ADJ', True)]))
             progressbar.print_progress(10, 10, 'Scoring negative progress:', 'Complete', 1, 50)
 
         if combined:
@@ -594,9 +594,9 @@ if __name__ == '__main__':
     r_parser = ReviewParser()
 
     # r_parser.review_corpus_distribution_analysis(category_selector=0)
-    # r_parser.score_all_adj_by_frequency_rates()
-    r_parser.train_by_using_the_same_amount_of_rating_reviews()
-    r_parser.score_all_adj_by_frequency_rates(combined=True)
+    r_parser.score_all_adj_by_frequency_rates()
+    # r_parser.train_by_using_the_same_amount_of_rating_reviews()
+    # r_parser.score_all_adj_by_frequency_rates(combined=True)
 
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
