@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import json
 import os.path
 import re
@@ -101,13 +103,14 @@ class DiscourseParser:
                 print 'Successfully read caching from files.'
                 return
 
-        print 'Parsing %s' % file_name
+        if file_name:
+            print 'Parsing %s' % file_name
 
         try:
             if not content:
                 text = open(file_name).read()
             else:
-                text = unicode(content)
+                text = content.decode('utf-8')
 
             text = re.sub('\.', '.<s>', text)
             text = re.sub('<s> *<p>', '<p>', text)
