@@ -1,9 +1,9 @@
-from __future__ import unicode_literals
-
 import json
 import os.path
 import re
 import traceback
+
+import spacy
 
 import paths
 import utils.rst_lib
@@ -12,6 +12,8 @@ import utils.serialize
 import utils.utils
 from segmentation.segmenter import Segmenter
 from treebuilder.build_tree_greedy import GreedyTreeBuilder
+
+nlp = spacy.load('en')
 
 
 class DiscourseParser:
@@ -110,9 +112,15 @@ class DiscourseParser:
             if not content:
                 text = open(file_name).read()
             else:
-                text = content.decode('utf-8')
+                # print 'content: ' + content
+                text = content.encode('utf8').decode('utf8', errors='ignore')
 
-            text = re.sub('\.', '.<s>', text)
+            parsed_data = nlp(text)
+            list_sentences = []
+            for sentence in parsed_data.sents:
+                list_sentences.append(sentence.text + '<s>')
+            # text = re.sub('\.', '.<s>', text)
+            text = ' '.join(list_sentences)
             text = re.sub('<s> *<p>', '<p>', text)
 
             sentences = []
@@ -151,6 +159,10 @@ class DiscourseParser:
                         pt.__setitem__(pt.leaf_treeposition(i), '_!%s!_' % escaped_edus[i])
 
                     self.smg_tree = utils.utils.print_SGML_tree(pt)
+
+                    if self.summary:
+                        del self.summary[:]
+
                     self.summary = utils.utils.print_summary(pt)
 
                     if file_name:

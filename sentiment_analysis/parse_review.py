@@ -246,7 +246,8 @@ class ReviewParser:
         """
 
         score = [0 for i in range(0, 10)]
-        parsed_text = nlp(unicode(text))
+        text = text.encode('utf8').decode('utf8', 'ignore')
+        parsed_text = nlp(text)
 
         for sentence in parsed_text.sents:
             # print sentence.text
@@ -255,8 +256,6 @@ class ReviewParser:
             for word in sentence:
                 if word.lower_ in constant.exceptional_set:
                     continue
-
-                print word.lower_ + word.pos_
 
                 if word.pos_ != 'ADJ':
                     continue
@@ -286,10 +285,11 @@ class ReviewParser:
 
         return score
 
-    def randomly_sentiment_analysis_testing(self, amount=5, test_name=None):
+    def randomly_sentiment_analysis_testing(self, amount=5, test_name=None, discourse_parser=False):
         """
         Randomly pick up movie reviews from corpus, analyse them and compare results to users' ratings
 
+        :param discourse_parser:
         :param amount:
         :param test_name:
         :return:
@@ -302,11 +302,21 @@ class ReviewParser:
         rating_exactly_same = 0
         list_test_data = []
 
+        if discourse_parser:
+            d_parser = DiscourseParser()
+
         if test_name and caching.read_from_file(test_name, 1):
             list_test_source = caching.read_from_file(test_name, 1)
 
             for comment in list_test_source:
-                comment['result'] = self.analyse_given_review(unicode(comment['content']))
+                if discourse_parser:
+                    d_parser.parse(content=comment['content'])
+                    text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
+                    text = re.sub(' *[,.?!] *\. *| *\. *', '. ', text)
+                else:
+                    text = comment['content']
+
+                comment['result'] = self.analyse_given_review(text)
                 print 'Rating: %d, predicted rating: %d' % (comment['rating'],
                                                             comment['result'].index(max(comment['result'])) + 1)
                 print
@@ -348,7 +358,19 @@ class ReviewParser:
                         continue
 
                     copy_comment = deepcopy(comment)
-                    copy_comment['result'] = self.analyse_given_review(unicode(comment['content']))
+
+                    if discourse_parser:
+                        try:
+                            d_parser.parse(content=comment['content'])
+                            text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
+                            text = re.sub(' *[,.?!] *\. *| *\. *', ' . ', text)
+                        except Exception, e:
+                            print e.message
+                            continue
+                    else:
+                        text = comment['content']
+
+                    copy_comment['result'] = self.analyse_given_review(text)
                     print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
                                                                 copy_comment['result'].index(
                                                                     max(copy_comment['result'])) + 1)
@@ -383,9 +405,14 @@ class ReviewParser:
               % (
                   100 * rating_difference_smaller_or_equal_than_one_count / float(len(list_test_data)),
                   100 * rating_exactly_same / float(len(list_test_data)))
+        print 'Number of samples: %d' % len(list_test_data)
 
         if test_name:
             caching.dump_to_file(list_test_data, test_name, 1)
+
+        if discourse_parser:
+            d_parser.unload()
+
         return list_test_data
 
     def train_by_using_the_same_amount_of_rating_reviews(self):
@@ -544,14 +571,15 @@ if __name__ == '__main__':
 
     # r_parser.review_corpus_distribution_analysis(category_selector=0)
     r_parser.score_all_adj_by_frequency_rates()
-    # r_parser.train_by_using_the_same_amount_of_rating_reviews()
-    # r_parser.score_all_adj_by_frequency_rates(combined=True)
+    r_parser.train_by_using_the_same_amount_of_rating_reviews()
+    r_parser.score_all_adj_by_frequency_rates(combined=True)
 
     # r_parser.display_top_hit('ADJ', True, 200)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
     # r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test2')
+    r_parser.randomly_sentiment_analysis_testing(amount=100, test_name='100_times_random', discourse_parser=False)
 
     list_words_frequency = []
     word_list = 'pure excellent worthy toxic'
@@ -589,8 +617,3 @@ if __name__ == '__main__':
     # tools.display_word_frequency_distribution(tools.fit_curve(list_format), True)
 
     # parser = DiscourseParser('../data/to_be_analysed/r7s1')
-    parser = DiscourseParser()
-    parser.parse(content='')
-    print '.'.join([ds['content'].lower() for ds in parser.get_summary()])
-    r_parser.analyse_given_review('.'.join([ds['content'].lower() for ds in parser.get_summary()]))
-    parser.unload()

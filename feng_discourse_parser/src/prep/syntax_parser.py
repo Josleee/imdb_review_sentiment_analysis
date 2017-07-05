@@ -69,7 +69,7 @@ class SyntaxParser:
         Parses a sentence s
         """
         # print "%s\n" % s.strip()
-        self.syntax_parser.stdin.write("%s\n" % s.strip())
+        self.syntax_parser.stdin.write("%s\n" % s.encode('utf8').decode('utf8', 'ignore').strip())
         self.syntax_parser.stdin.flush()
 
         # Read stderr anyway to avoid problems
