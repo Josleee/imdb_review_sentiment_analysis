@@ -84,6 +84,20 @@ class DiscourseParser:
         if self.tree_builder is not None:
             self.tree_builder.unload()
 
+        del self.verbose
+        del self.seg
+        del self.output
+        del self.SGML
+        del self.edus
+        del self.file_name
+        del self.content
+        del self.segmenter
+        del self.dependencies
+        del self.max_iters
+        del self.feature_sets
+        del self.smg_tree
+        del self.summary
+
     def parse(self, file_name=None, content=None):
         if not file_name:
             file_name = self.file_name
@@ -95,6 +109,9 @@ class DiscourseParser:
                 content = self.content
         else:
             self.content = content
+
+        if self.summary:
+            del self.summary[:]
 
         if not content:
             if not os.path.exists(file_name):
@@ -135,6 +152,9 @@ class DiscourseParser:
 
             ''' Step 1: segment the each sentence into EDUs '''
             edus = None
+            trees = None
+            cuts = None
+            deps = None
             (trees, deps, cuts, edus) = self.segmenter.do_segment(text, edus)
             escaped_edus = self.segmenter.get_escaped_edus(trees, cuts, edus)
             print 'Finished segmentation, segmented into %d EDUs' % len(edus)
@@ -160,9 +180,6 @@ class DiscourseParser:
 
                     self.smg_tree = utils.utils.print_SGML_tree(pt)
 
-                    if self.summary:
-                        del self.summary[:]
-
                     self.summary = utils.utils.print_summary(pt)
 
                     if file_name:
@@ -181,6 +198,9 @@ class DiscourseParser:
             if self.tree_builder is not None:
                 self.tree_builder.unload()
             raise
+        finally:
+            del parse_trees
+            del pt
 
     def get_smg_tree(self):
         if not self.smg_tree:

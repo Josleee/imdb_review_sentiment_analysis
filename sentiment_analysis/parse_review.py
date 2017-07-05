@@ -302,17 +302,21 @@ class ReviewParser:
         rating_exactly_same = 0
         list_test_data = []
 
-        if discourse_parser:
-            d_parser = DiscourseParser()
-
         if test_name and caching.read_from_file(test_name, 1):
             list_test_source = caching.read_from_file(test_name, 1)
 
             for comment in list_test_source:
                 if discourse_parser:
-                    d_parser.parse(content=comment['content'])
-                    text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
-                    text = re.sub(' *[,.?!] *\. *| *\. *', '. ', text)
+                    try:
+                        d_parser = DiscourseParser()
+                        d_parser.parse(content=comment['content'])
+                        text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
+                        text = re.sub(' *[,.?!] *\. *| *\. *', ' . ', text)
+                    except Exception, e:
+                        print e.message
+                        continue
+                    finally:
+                        d_parser.unload()
                 else:
                     text = comment['content']
 
@@ -361,12 +365,15 @@ class ReviewParser:
 
                     if discourse_parser:
                         try:
+                            d_parser = DiscourseParser()
                             d_parser.parse(content=comment['content'])
                             text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
                             text = re.sub(' *[,.?!] *\. *| *\. *', ' . ', text)
                         except Exception, e:
                             print e.message
                             continue
+                        finally:
+                            d_parser.unload()
                     else:
                         text = comment['content']
 
@@ -409,9 +416,6 @@ class ReviewParser:
 
         if test_name:
             caching.dump_to_file(list_test_data, test_name, 1)
-
-        if discourse_parser:
-            d_parser.unload()
 
         return list_test_data
 
@@ -579,7 +583,7 @@ if __name__ == '__main__':
     # r_parser.find_sample(10, 'good', 10)
 
     # r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test2')
-    r_parser.randomly_sentiment_analysis_testing(amount=100, test_name='100_times_random', discourse_parser=False)
+    r_parser.randomly_sentiment_analysis_testing(amount=120, test_name='100_times_random', discourse_parser=True)
 
     list_words_frequency = []
     word_list = 'pure excellent worthy toxic'

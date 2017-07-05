@@ -12,7 +12,7 @@ try_times = 5
 # Box Office, Most Popular Movies, Top Rated Movies, Top Rated English Movies, Lowest Rated Movies
 chart_category = ['boxoffice', 'top', 'top-english-movies', 'moviemeter', 'bottom']
 # 0 ~ 4 corresponding to the specific category above respectively
-category_selector = 2
+category_selector = 3
 
 
 # get analysed filename
