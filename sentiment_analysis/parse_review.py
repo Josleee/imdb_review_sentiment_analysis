@@ -149,6 +149,22 @@ class ReviewParser:
         if index == 1:
             print 'Not found.'
 
+    def get_word_scores(self, word, negation=False):
+        """
+        Get specific word scores
+
+        :param negation:
+        :param word:
+        :return:
+        """
+
+        if negation:
+            dict_score = self.dict_neg_scores
+        else:
+            dict_score = self.dict_pos_scores
+
+        return dict_score[word]
+
     def get_word_frequency_rate(self, word, pos_type, negation=False):
         """
         Get specific word occurrence frequency in certain pos
@@ -160,13 +176,13 @@ class ReviewParser:
         """
 
         if negation:
-            dict_pos_statistic = self.dict_neg_statistic
+            dict_statistic = self.dict_neg_statistic
         else:
-            dict_pos_statistic = self.dict_pos_statistic
+            dict_statistic = self.dict_pos_statistic
 
         list_frequency_rate = []
 
-        for key, value in dict_pos_statistic.iteritems():
+        for key, value in dict_statistic.iteritems():
             if key != pos_type:
                 continue
 
@@ -594,17 +610,20 @@ if __name__ == '__main__':
     word_list = 'excellent predictable terrible'
     for item in word_list.split(' '):
         list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
-        p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
-        n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
+        p1 = r_parser.get_word_scores(item)
+        n1 = r_parser.get_word_scores(item, True)
+        # p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
+        # n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
 
         pi = [p1, n1]
         for p in pi:
             print '%s &' % item,
             index = 0
+            p = p[0]
             for v in p['list']:
                 index += 1
 
-                print '%.2f' % (float(v) * 10),
+                print '%.2f' % (float(v) * 1),
                 if index % 10 != 0:
                     print '&',
                 else:
@@ -624,5 +643,3 @@ if __name__ == '__main__':
 
     # tools.display_word_frequency_distribution(list_format, False)
     # tools.display_word_frequency_distribution(tools.fit_curve(list_format), True)
-
-    # parser = DiscourseParser('../data/to_be_analysed/r7s1')
