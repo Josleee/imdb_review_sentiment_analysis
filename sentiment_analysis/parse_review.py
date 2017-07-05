@@ -305,12 +305,14 @@ class ReviewParser:
         if test_name and caching.read_from_file(test_name, 1):
             list_test_source = caching.read_from_file(test_name, 1)
 
+            s_index = 0
             for comment in list_test_source:
                 if discourse_parser:
                     try:
                         d_parser = DiscourseParser()
                         d_parser.parse(content=comment['content'])
-                        text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
+                        text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()[s_index:]])
+                        s_index = len(d_parser.get_summary())
                         text = re.sub(' *[,.?!] *\. *| *\. *', ' . ', text)
                     except Exception, e:
                         print e.message
@@ -349,6 +351,7 @@ class ReviewParser:
             for ca in config.chart_category[2:]:
                 dict_ca = caching.read_from_file(ca, 1)
 
+                s_index = 0
                 for i in range(0, amount / len(config.chart_category[2:])):
                     movie_name = random.choice(dict_ca.keys())
                     comments = dict_ca[movie_name]
@@ -367,7 +370,8 @@ class ReviewParser:
                         try:
                             d_parser = DiscourseParser()
                             d_parser.parse(content=comment['content'])
-                            text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()])
+                            text = '.'.join([ds['content'].lower() for ds in d_parser.get_summary()[s_index:]])
+                            s_index = len(d_parser.get_summary())
                             text = re.sub(' *[,.?!] *\. *| *\. *', ' . ', text)
                         except Exception, e:
                             print e.message
@@ -574,7 +578,7 @@ if __name__ == '__main__':
     r_parser = ReviewParser()
 
     # r_parser.review_corpus_distribution_analysis(category_selector=0)
-    r_parser.score_all_adj_by_frequency_rates()
+    # r_parser.score_all_adj_by_frequency_rates()
     r_parser.train_by_using_the_same_amount_of_rating_reviews()
     r_parser.score_all_adj_by_frequency_rates(combined=True)
 
@@ -583,30 +587,31 @@ if __name__ == '__main__':
     # r_parser.find_sample(10, 'good', 10)
 
     # r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test2')
-    r_parser.randomly_sentiment_analysis_testing(amount=120, test_name='100_times_random', discourse_parser=True)
+    # r_parser.randomly_sentiment_analysis_testing(amount=120, test_name='100_times_random', discourse_parser=False)
+    # r_parser.randomly_sentiment_analysis_testing(amount=500, test_name='500_times_random_test', discourse_parser=False)
 
     list_words_frequency = []
-    word_list = 'pure excellent worthy toxic'
-    # for item in word_list.split(' '):
-    #     list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
-    #     p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
-    #     n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
-    #
-    #     pi = [p1, n1]
-    #     for p in pi:
-    #         print '%s &' % item,
-    #         index = 0
-    #         for v in p['list']:
-    #             index += 1
-    #
-    #             print '%.2f' % (float(v) * 10),
-    #             if index % 10 != 0:
-    #                 print '&',
-    #             else:
-    #                 print '\\\\'
-    #
-    # tools.display_word_frequency_distribution(list_words_frequency, False)
-    # tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
+    word_list = 'excellent predictable terrible'
+    for item in word_list.split(' '):
+        list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
+        p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
+        n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
+
+        pi = [p1, n1]
+        for p in pi:
+            print '%s &' % item,
+            index = 0
+            for v in p['list']:
+                index += 1
+
+                print '%.2f' % (float(v) * 10),
+                if index % 10 != 0:
+                    print '&',
+                else:
+                    print '\\\\'
+
+    tools.display_word_frequency_distribution(list_words_frequency, False)
+    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
     # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
     file_name = 'r9s3'

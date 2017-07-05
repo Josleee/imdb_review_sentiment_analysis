@@ -79,24 +79,27 @@ class DiscourseParser:
             raise
 
     def unload(self):
-        if self.segmenter is not None:
-            self.segmenter.unload()
-        if self.tree_builder is not None:
-            self.tree_builder.unload()
+        try:
+            if self.segmenter is not None:
+                self.segmenter.unload()
+            if self.tree_builder is not None:
+                self.tree_builder.unload()
 
-        del self.verbose
-        del self.seg
-        del self.output
-        del self.SGML
-        del self.edus
-        del self.file_name
-        del self.content
-        del self.segmenter
-        del self.dependencies
-        del self.max_iters
-        del self.feature_sets
-        del self.smg_tree
-        del self.summary
+            del self.verbose
+            del self.seg
+            del self.output
+            del self.SGML
+            del self.edus
+            del self.file_name
+            del self.content
+            del self.segmenter
+            del self.dependencies
+            del self.max_iters
+            del self.feature_sets
+            del self.smg_tree
+            del self.summary
+        except Exception, e:
+            print e.message
 
     def parse(self, file_name=None, content=None):
         if not file_name:
@@ -198,9 +201,6 @@ class DiscourseParser:
             if self.tree_builder is not None:
                 self.tree_builder.unload()
             raise
-        finally:
-            del parse_trees
-            del pt
 
     def get_smg_tree(self):
         if not self.smg_tree:
