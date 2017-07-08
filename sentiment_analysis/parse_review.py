@@ -1,3 +1,4 @@
+import codecs
 import random
 import re
 from collections import OrderedDict
@@ -465,6 +466,8 @@ class ReviewParser:
             # list_sum = tools.plus_two_lists(list_sum, list_distribution)
             # dict_distribution[category_name] = list_distribution
 
+        print len(dict_distribution)
+
         list_movie_info = [dict() for i in range(0, 10)]
         for movie_name, value in dict_distribution.iteritems():
             list_ratings = [0 for i in range(0, 10)]
@@ -497,7 +500,7 @@ class ReviewParser:
         for i in range(0, 3):
             list_review_distributed.extend(tools.equally_distribute(list_sum[i * 3:i * 3 + 3],
                                                                     unassigned_value=each_part_reviews_amount))
-        # print list_review_distributed
+        print list_review_distributed
 
         for r, a in enumerate(list_review_distributed):
             list_review_amount = tools.equally_distribute(list_movie_info[r].values(), unassigned_value=a)
@@ -576,16 +579,18 @@ class ReviewParser:
                 list_count_different_category_number[comment['rating'] - 1] += 1
 
         if show_result:
-            list_format = [
-                {'list': list_count_different_category_number, 'key_word': '', 'fitted': False, 'pos_type': ''}]
-            print 'Reviews count from rating 1-10: %s' % ', '.join(str(v) for v in list_count_different_category_number)
-            tools.display_word_frequency_distribution(list_format, y_label='Occurrence times')
+            # list_format = [
+            #     {'list': list_count_different_category_number, 'key_word': '', 'fitted': False, 'pos_type': ''}]
+            print 'Reviews count from rating 1-10: %s, total: %s' % \
+                  (', '.join(str(v) for v in list_count_different_category_number),
+                   sum(list_count_different_category_number))
+            # tools.display_word_frequency_distribution(list_format, y_label='Occurrence times')
 
         return list_count_different_category_number
 
 
 if __name__ == '__main__':
-    interesting_word_list = ['pure', 'predictable', 'worthy', 'laughable']
+    interesting_word_list = ['pure', 'predictable', 'worthy', 'laughable', 'unnecessary']
     wired_word_list = ['good']
     typical_word_list = ['best', 'terrible', 'willing', 'marvelous']
     unexpected_word_list = ['unexpected', 'intelligent']
@@ -593,53 +598,62 @@ if __name__ == '__main__':
 
     r_parser = ReviewParser()
 
-    # r_parser.review_corpus_distribution_analysis(category_selector=0)
-    r_parser.score_all_adj_by_frequency_rates()
-    # r_parser.train_by_using_the_same_amount_of_rating_reviews()
-    # r_parser.score_all_adj_by_frequency_rates(combined=True)
+    # r_parser.review_corpus_distribution_analysis(category_selector=1)
+    # r_parser.score_all_adj_by_frequency_rates()
+    r_parser.train_by_using_the_same_amount_of_rating_reviews()
+    r_parser.score_all_adj_by_frequency_rates(combined=True)
 
-    # r_parser.display_top_hit('ADJ', True, 200)
+    # r_parser.display_top_hit('ADJ', True, 500)
     # r_parser.display_top_hit('ADJ', False, 200)
     # r_parser.find_sample(10, 'good', 10)
 
     # r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test2')
     # r_parser.randomly_sentiment_analysis_testing(amount=120, test_name='100_times_random', discourse_parser=False)
-    # r_parser.randomly_sentiment_analysis_testing(amount=500, test_name='500_times_random_test', discourse_parser=False)
+    # r_parser.randomly_sentiment_analysis_testing(amount=600, test_name='600_times_random_test', discourse_parser=False)
 
-    list_words_frequency = []
-    word_list = 'excellent predictable terrible'
-    for item in word_list.split(' '):
-        list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
-        p1 = r_parser.get_word_scores(item)
-        n1 = r_parser.get_word_scores(item, True)
-        # p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
-        # n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
+    # # romantic different decent violent
+    # list_words_frequency = []
+    # word_list = 'decent'
+    # for item in word_list.split(' '):
+    #     list_words_frequency.append(r_parser.get_word_frequency_rate(item, 'ADJ'))
+    #     # p1 = r_parser.get_word_scores(item)
+    #     # n1 = r_parser.get_word_scores(item, True)
+    #     p1 = r_parser.get_word_frequency_rate(item, 'ADJ')
+    #     n1 = r_parser.get_word_frequency_rate(item, 'ADJ', True)
+    #
+    #     # pi = [p1, n1]
+    #     # for p in pi:
+    #     #     print '%s &' % item,
+    #     #     index = 0
+    #     #     p = p[0]
+    #     #     for v in p['list']:
+    #     #         index += 1
+    #     #
+    #     #         print '%.2f' % (float(v) * 1),
+    #     #         if index % 10 != 0:
+    #     #             print '&',
+    #     #         else:
+    #     #             print '\\\\'
+    #
+    # tools.display_word_frequency_distribution(list_words_frequency, False)
+    # tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
 
-        pi = [p1, n1]
-        for p in pi:
-            print '%s &' % item,
-            index = 0
-            p = p[0]
-            for v in p['list']:
-                index += 1
-
-                print '%.2f' % (float(v) * 1),
-                if index % 10 != 0:
-                    print '&',
-                else:
-                    print '\\\\'
-
-    tools.display_word_frequency_distribution(list_words_frequency, False)
-    tools.display_word_frequency_distribution(tools.fit_curve(list_words_frequency))
-
-    # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
-    file_name = 'r9s3'
-    rating = 3
+    # # review.txt review4_7s.txt review5_1s.txt review6_3s.txt review7_1s.txt
+    # file_name = 'r4s2'
+    # rating = 2
     # text = codecs.open('../data/to_be_analysed/' + file_name, encoding='utf-8', mode='r').read()
     # list_result = r_parser.analyse_given_review(text)
     # print list_result
+    # index = 0
+    # for v in list_result:
+    #     index += 1
+    #     print '%.2f' % (float(v) * 1),
+    #     if index % 10 != 0:
+    #         print '&',
+    #     else:
+    #         print '\\\\'
     # print tools.compare_result_to_rating(list_result, rating)
     # list_format = [{'list': list_result, 'key_word': 'R', 'fitted': False, 'pos_type': ''}]
-
-    # tools.display_word_frequency_distribution(list_format, False)
-    # tools.display_word_frequency_distribution(tools.fit_curve(list_format), True)
+    #
+    # tools.display_word_frequency_distribution(list_format, True)
+    # # tools.display_word_frequency_distribution(tools.fit_curve(list_format), True)
