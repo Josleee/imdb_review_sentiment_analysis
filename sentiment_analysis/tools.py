@@ -111,10 +111,11 @@ def calculate_relative_scores(list_y_values):
     return list_scored
 
 
-def plus_two_lists(list_a, list_b):
+def plus_two_lists(list_a, list_b, weighted_score=1):
     """
     Plus values in two lists
 
+    :param weighted_score:
     :param list_a:
     :param list_b:
     :return:
@@ -123,7 +124,7 @@ def plus_two_lists(list_a, list_b):
     list_c = []
 
     for index, value in enumerate(list_a):
-        list_c.append(value + list_b[index])
+        list_c.append(value * weighted_score + list_b[index])
 
     return list_c
 

@@ -1,4 +1,3 @@
-import codecs
 import random
 import re
 from collections import OrderedDict
@@ -302,10 +301,12 @@ class ReviewParser:
 
         return score
 
-    def randomly_sentiment_analysis_testing(self, amount=5, test_name=None, discourse_parser=False):
+    def randomly_sentiment_analysis_testing(self, amount=5, test_name=None, discourse_parser=False,
+                                            weighting_scheme=2):
         """
         Randomly pick up movie reviews from corpus, analyse them and compare results to users' ratings
 
+        :param weighting_scheme: the value of nuclei / satellites, bigger than 1
         :param discourse_parser:
         :param amount:
         :param test_name:
@@ -339,7 +340,16 @@ class ReviewParser:
                 else:
                     text = comment['content']
 
-                comment['result'] = self.analyse_given_review(text)
+                if discourse_parser and weighting_scheme:
+                    result_text = self.analyse_given_review(comment['content'])
+                    result_core = self.analyse_given_review(text)
+                    comment['result'] = tools.plus_two_lists(result_core, result_text, weighting_scheme - 1)
+                    # print result_core
+                    # print result_text
+                    # print comment['result']
+                else:
+                    comment['result'] = self.analyse_given_review(text)
+
                 print 'Rating: %d, predicted rating: %d' % (comment['rating'],
                                                             comment['result'].index(max(comment['result'])) + 1)
                 print
@@ -398,7 +408,16 @@ class ReviewParser:
                     else:
                         text = comment['content']
 
-                    copy_comment['result'] = self.analyse_given_review(text)
+                    if discourse_parser and weighting_scheme:
+                        result_text = self.analyse_given_review(comment['content'])
+                        result_core = self.analyse_given_review(text)
+                        copy_comment['result'] = tools.plus_two_lists(result_core, result_text, weighting_scheme - 1)
+                        # print result_core
+                        # print result_text
+                        # print comment['result']
+                    else:
+                        copy_comment['result'] = self.analyse_given_review(text)
+
                     print 'Rating: %d, predicted rating: %d' % (copy_comment['rating'],
                                                                 copy_comment['result'].index(
                                                                     max(copy_comment['result'])) + 1)
@@ -609,7 +628,8 @@ if __name__ == '__main__':
 
     # r_parser.randomly_sentiment_analysis_testing(amount=1000, test_name='1000_times_random_test2')
     # r_parser.randomly_sentiment_analysis_testing(amount=120, test_name='100_times_random', discourse_parser=False)
-    # r_parser.randomly_sentiment_analysis_testing(amount=600, test_name='600_times_random_test', discourse_parser=False)
+    r_parser.randomly_sentiment_analysis_testing(amount=600, test_name='600_times_random_test',
+                                                 discourse_parser=True, weighting_scheme=3)
 
     # # romantic different decent violent
     # list_words_frequency = []
