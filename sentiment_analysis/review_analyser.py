@@ -8,7 +8,7 @@ import spacy
 
 from network_tools import config
 from sentiment_analysis import constant, tools
-from sentiment_analysis.parse_discourse import DiscourseParser
+from sentiment_analysis.discourse_parser import DiscourseParser
 from utilities import caching, progressbar
 
 nlp = spacy.load('en')
